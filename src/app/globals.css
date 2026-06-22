@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --connected-purple: #3f2464;
+  --connected-purple-dark: #26123f;
+  --connected-gold: #d4af37;
+  --connected-orange: #c8793d;
+  --connected-background: #f7f5f2;
+  --connected-text: #111827;
+}
+
+body {
+  background: var(--connected-background);
+  color: var(--connected-text);
+}

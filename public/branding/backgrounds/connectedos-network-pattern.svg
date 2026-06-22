@@ -1,0 +1,24 @@
+<svg width="900" height="620" viewBox="0 0 900 620" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="900" height="620" fill="none"/>
+  <g opacity="0.46" stroke="#3F2464" stroke-width="2">
+    <path d="M112 452L228 346L374 384L520 250L690 302L792 174"/>
+    <path d="M228 346L248 168L520 250L546 474L374 384"/>
+    <path d="M690 302L546 474L792 174L520 250"/>
+  </g>
+  <g>
+    <circle cx="112" cy="452" r="14" fill="#3F2464" fill-opacity="0.35"/>
+    <circle cx="228" cy="346" r="16" fill="#D4AF37" fill-opacity="0.42"/>
+    <circle cx="248" cy="168" r="12" fill="#3F2464" fill-opacity="0.3"/>
+    <circle cx="374" cy="384" r="12" fill="#C8793D" fill-opacity="0.28"/>
+    <circle cx="520" cy="250" r="18" fill="#D4AF37" fill-opacity="0.36"/>
+    <circle cx="546" cy="474" r="13" fill="#3F2464" fill-opacity="0.32"/>
+    <circle cx="690" cy="302" r="14" fill="#3F2464" fill-opacity="0.3"/>
+    <circle cx="792" cy="174" r="18" fill="#D4AF37" fill-opacity="0.34"/>
+  </g>
+  <g opacity="0.22" stroke="#3F2464">
+    <path d="M72 548H828"/>
+    <path d="M72 72H828"/>
+    <path d="M72 72V548"/>
+    <path d="M828 72V548"/>
+  </g>
+</svg>

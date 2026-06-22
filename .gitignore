@@ -1,0 +1,10 @@
+.DS_Store
+.env
+.env*.local
+node_modules/
+.npm-cache/
+.next/
+dist/
+coverage/
+*.tsbuildinfo
+prisma/dev.db

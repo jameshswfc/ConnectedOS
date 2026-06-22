@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="160" viewBox="0 0 640 160" role="img" aria-label="Connected Hospitality">
+  <rect width="640" height="160" fill="#ffffff"/>
+  <rect x="28" y="28" width="14" height="104" fill="#F28C28"/>
+  <text x="62" y="76" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="700" fill="#4B1F73">Connected</text>
+  <text x="62" y="116" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#172033">Hospitality</text>
+</svg>

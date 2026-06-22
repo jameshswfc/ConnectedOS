@@ -1,0 +1,2429 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserType {
+  internal
+  customer
+}
+
+enum PermissionLevel {
+  administrator
+  user
+}
+
+enum NotificationStatus {
+  unread
+  read
+  archived
+}
+
+enum DocumentStorageProvider {
+  sharepoint
+  other
+}
+
+enum AccountType {
+  prospect
+  customer
+  partner
+  supplier
+  former_customer
+}
+
+enum AccountStatus {
+  prospect
+  active_customer
+  partner
+  supplier
+  inactive
+  former_customer
+}
+
+enum ContactStatus {
+  active
+  inactive
+}
+
+enum RelationshipStrength {
+  unknown
+  weak
+  medium
+  strong
+  secured
+  preferred_partner
+  only_partner
+}
+
+enum LeadStatus {
+  new
+  contacted
+  qualified
+  disqualified
+  converted
+}
+
+enum OpportunityStage {
+  lead
+  qualified
+  pre_sales_solution_design
+  proposal_sent
+  negotiation
+  proposal_verbally_accepted
+  closed_won_po_received
+  lost
+}
+
+enum OpportunityStatus {
+  open
+  won
+  lost
+  inactive
+}
+
+enum OpportunityType {
+  guest_wifi
+  cctv_install
+  converged_network_multiple_technologies
+  structured_cabling_racks
+  project_management
+  pbx_telephony
+  iot_grms
+  fibre_broadband
+  av_meeting_room_solutions
+  matv_tv_headend
+  ups_power_protection
+  digital_signage
+  integration_services
+  deployment_services
+  labour_only
+  elv_consultancy
+  iptv_upgrade
+  marriott_gpns
+  other
+}
+
+enum OpportunitySource {
+  referral
+  linkedin
+  website
+  existing_customer
+  partner
+  manufacturer
+  tender_portal
+  cold_outreach
+  conference_event
+  other
+}
+
+enum SalesActivityType {
+  call
+  email
+  meeting
+  task
+  note
+}
+
+enum PriceImportStatus {
+  completed
+  completed_with_errors
+  failed
+}
+
+enum QuoteStatus {
+  draft
+  internal_review
+  approved
+  rejected
+  sent
+  accepted
+  declined
+  expired
+}
+
+enum QuoteLineType {
+  product
+  labour
+  service
+  note
+}
+
+enum CatalogueItemType {
+  product
+  labour
+  service
+}
+
+enum QuoteApprovalStatus {
+  pending
+  approved
+  rejected
+  cancelled
+}
+
+enum QuoteApprovalRuleType {
+  low_margin
+  high_value
+  manual_override
+}
+
+enum QuoteExportType {
+  pdf_quote
+  excel_bom
+  internal_margin_sheet
+  long_proposal_pptx
+  long_proposal_pdf
+}
+
+enum ProjectStatus {
+  draft
+  initiation
+  planning
+  active
+  on_hold
+  at_risk
+  completed
+  closed
+  cancelled
+}
+
+enum ProjectRagStatus {
+  green
+  amber
+  red
+}
+
+enum ProjectTaskStatus {
+  not_started
+  in_progress
+  blocked
+  complete
+  cancelled
+}
+
+enum ProjectMilestoneStatus {
+  not_started
+  in_progress
+  complete
+  delayed
+  cancelled
+}
+
+enum ProjectDeliveryStage {
+  initiation
+  planning
+  delivery
+  validation
+  handover
+  closure
+}
+
+enum StageGateStatus {
+  not_started
+  in_progress
+  complete
+  blocked
+}
+
+enum ProjectDependencyType {
+  finish_to_start
+  start_to_start
+  finish_to_finish
+  start_to_finish
+}
+
+enum ProjectResourceRole {
+  project_manager
+  technical_lead
+  project_engineer
+  field_engineer
+  pre_sales_engineer
+  other
+}
+
+enum ProjectActivityType {
+  call
+  email
+  meeting
+  site_visit
+  note
+  task
+  handover
+  customer_update
+}
+
+enum ProjectIssueActionType {
+  issue
+  action
+  risk
+  decision
+}
+
+enum ProjectIssueActionStatus {
+  open
+  in_progress
+  blocked
+  closed
+  cancelled
+}
+
+enum ProjectPriority {
+  low
+  normal
+  high
+  urgent
+}
+
+enum ProjectDocumentType {
+  daily_update
+  weekly_update
+  implementation_document
+  change_request
+  closure_form
+  support_handover
+  issue_action_export
+  other
+}
+
+enum ProjectFinancialEntryType {
+  invoice
+  payment
+  cost
+  purchase_order_placeholder
+}
+
+enum ProjectFinancialEntryStatus {
+  planned
+  raised
+  paid
+  collected
+  cancelled
+}
+
+enum ProjectEquipmentItemStatus {
+  required
+  ordered
+  received
+  cancelled
+}
+
+enum ProjectFormType {
+  daily_update
+  weekly_update
+  implementation_document
+  change_request
+  closure
+  support_handover
+}
+
+enum ResourceType {
+  internal_user
+  subcontractor
+  agency
+  supplier
+  other
+}
+
+enum ResourceBookingType {
+  project
+  non_project
+  support
+  survey
+  callout
+  training
+  admin
+  leave_block
+}
+
+enum ResourceBookingStatus {
+  draft
+  confirmed
+  completed
+  cancelled
+}
+
+enum BookingConflictStatus {
+  clear
+  warning
+  blocked
+  overridden
+}
+
+enum LeaveType {
+  annual_leave
+  sick_leave
+  unpaid_leave
+  compassionate_leave
+  training
+  toil
+  other
+}
+
+enum LeaveStatus {
+  draft
+  submitted
+  approved
+  rejected
+  cancelled
+}
+
+enum ExpenseClaimStatus {
+  draft
+  submitted
+  queried
+  approved
+  rejected
+  paid
+}
+
+enum ExpenseCategory {
+  travel
+  mileage
+  accommodation
+  meals
+  parking
+  materials
+  subsistence
+  other
+}
+
+enum PurchaseOrderStatus {
+  draft
+  submitted
+  approved
+  ordered
+  partially_received
+  received
+  cancelled
+  invoiced
+  paid
+}
+
+enum SupplierInvoiceStatus {
+  received
+  approved
+  disputed
+  paid
+}
+
+enum CustomerInvoiceStatus {
+  draft
+  issued
+  partially_paid
+  paid
+  overdue
+  cancelled
+}
+
+enum BillingScheduleTrigger {
+  upfront
+  milestone
+  completion
+  manual
+}
+
+enum BillingScheduleStatus {
+  pending
+  ready
+  invoiced
+  paid
+}
+
+enum AssetStatus {
+  required
+  ordered
+  received
+  staged
+  installed
+  handed_over
+  returned
+  disposed
+  cancelled
+}
+
+enum HelpdeskTicketType {
+  incident
+  service_request
+  change_request
+  problem
+  question
+  maintenance
+}
+
+enum HelpdeskTicketCategory {
+  network
+  wifi
+  iptv
+  cabling
+  hardware
+  software
+  access
+  billing
+  other
+}
+
+enum HelpdeskPriority {
+  low
+  normal
+  high
+  urgent
+  critical
+}
+
+enum HelpdeskImpact {
+  low
+  medium
+  high
+}
+
+enum HelpdeskUrgency {
+  low
+  medium
+  high
+}
+
+enum HelpdeskTicketStatus {
+  new
+  triage
+  assigned
+  waiting_customer
+  waiting_third_party
+  in_progress
+  resolved
+  closed
+  cancelled
+}
+
+enum HelpdeskTicketSource {
+  manual
+  email
+  phone
+  portal
+  project_handover
+}
+
+enum HelpdeskCommentVisibility {
+  internal
+  customer_visible
+}
+
+enum HelpdeskSlaStatus {
+  on_track
+  due_soon
+  breached
+  paused
+}
+
+enum KnowledgeArticleStatus {
+  draft
+  published
+  archived
+}
+
+enum PresalesRequestCategory {
+  network
+  wi_fi
+  iptv
+  structured_cabling
+  elv
+  security
+  guest_room_technology
+  digital_signage
+  audio_visual
+  consultancy
+  multi_discipline
+}
+
+enum PresalesRequestType {
+  wifi_design
+  iptv_design
+  structured_cabling
+  elv
+  consultancy
+  survey
+  rfp_analysis
+  design_review
+  bom_review
+  proposal_support
+}
+
+enum PresalesPriority {
+  low
+  normal
+  high
+  urgent
+}
+
+enum PresalesCommercialPriority {
+  low
+  normal
+  high
+  strategic
+}
+
+enum PresalesRequestStatus {
+  submitted
+  triage
+  assigned
+  in_progress
+  query_raised
+  waiting_customer
+  internal_review
+  complete
+  cancelled
+}
+
+enum PresalesTaskStatus {
+  open
+  in_progress
+  complete
+  cancelled
+}
+
+enum PresalesDeliverableStatus {
+  open
+  in_progress
+  complete
+  not_required
+}
+
+enum PresalesSlaStatus {
+  on_track
+  due_soon
+  overdue
+  complete
+}
+
+enum PresalesRagStatus {
+  green
+  amber
+  red
+}
+
+enum PresalesDeliverableType {
+  rfp_review
+  guest_wifi_heatmap
+  ap_locations
+  network_diagram
+  port_matrix
+  bill_of_materials
+  partner_quote
+  survey_report
+  channel_list
+  dish_rig_drawing
+  bandwidth_assessment
+  gui_scope
+  casting_scope
+  applications_scope
+  phone_system_design
+  ip_extensions
+  analogue_extensions
+  handsets
+  ip_network_requirements
+  pbx_requirement
+  sip_trunks
+  number_porting
+  rack_design
+  rack_count
+  cable_schedule
+  cable_runs
+  fibre_schedule
+  fibre_runs
+  cabling_days
+  network_requirements
+  telephony_design
+  other
+}
+
+model User {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  microsoftId   String?  @unique @map("microsoft_id")
+  displayName   String   @map("display_name")
+  email         String   @unique
+  passwordHash  String?  @map("password_hash")
+  jobTitle      String?  @map("job_title")
+  department    String?
+  roleId        String   @map("role_id") @db.Uuid
+  permissionLevel PermissionLevel @default(user) @map("permission_level")
+  isActive      Boolean  @default(true) @map("is_active")
+  mustChangePassword Boolean @default(false) @map("must_change_password")
+  lastLoginAt   DateTime? @map("last_login_at")
+  userType      UserType @default(internal) @map("user_type")
+  createdAt     DateTime @default(now()) @map("created_at")
+  createdById   String?  @map("created_by_id") @db.Uuid
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  updatedById   String?  @map("updated_by_id") @db.Uuid
+  deactivatedAt DateTime? @map("deactivated_at")
+  deletedAt     DateTime? @map("deleted_at")
+  deletedById   String?  @map("deleted_by_id") @db.Uuid
+
+  role          Role     @relation(fields: [roleId], references: [id])
+  auditLogs     AuditLog[]
+  notifications Notification[]
+  comments      Comment[]
+  ownedAccounts Account[] @relation("AccountOwner")
+  createdAccounts Account[] @relation("AccountCreatedBy")
+  updatedAccounts Account[] @relation("AccountUpdatedBy")
+  deletedAccounts Account[] @relation("AccountDeletedBy")
+  ownedLeads Lead[] @relation("LeadOwner")
+  ownedOpportunities Opportunity[] @relation("OpportunityOwner")
+  ownedSalesActivities SalesActivity[] @relation("SalesActivityOwner")
+  ownedQuotes Quote[] @relation("QuoteOwner")
+  uploadedPriceImports PriceImport[] @relation("PriceImportUploadedBy")
+  requestedQuoteApprovals QuoteApprovalRequest[] @relation("QuoteApprovalRequestedBy")
+  assignedQuoteApprovals QuoteApprovalRequest[] @relation("QuoteApprovalApprover")
+  generatedQuoteExports QuoteExport[] @relation("QuoteExportGeneratedBy")
+  requestedPresalesRequests PresalesRequest[] @relation("PresalesRequestRequestedBy")
+  assignedPresalesRequests PresalesRequest[] @relation("PresalesRequestAssignedTo")
+  assignedPresalesTasks PresalesTask[] @relation("PresalesTaskAssignedTo")
+  uploadedPresalesDeliverables PresalesDeliverable[] @relation("PresalesDeliverableUploadedBy")
+  assignedPresalesDeliverables PresalesDeliverable[] @relation("PresalesDeliverableAssignedTo")
+  managedProjects Project[] @relation("ProjectManager")
+  createdProjects Project[] @relation("ProjectCreatedBy")
+  updatedProjects Project[] @relation("ProjectUpdatedBy")
+  deletedProjects Project[] @relation("ProjectDeletedBy")
+  planBaselinedProjects Project[] @relation("ProjectPlanBaselinedBy")
+  ownedProjectTasks ProjectTask[] @relation("ProjectTaskOwner")
+  assignedProjectTasks ProjectTask[] @relation("ProjectTaskAssignedTo")
+  ownedProjectMilestones ProjectMilestone[] @relation("ProjectMilestoneOwner")
+  completedProjectStageGates ProjectStageGate[] @relation("ProjectStageGateCompletedBy")
+  projectResourceAssignments ProjectResourceAssignment[]
+  ownedProjectActivities ProjectActivity[] @relation("ProjectActivityOwner")
+  assignedProjectActivities ProjectActivity[] @relation("ProjectActivityAssignedTo")
+  ownedProjectIssueActions ProjectIssueAction[] @relation("ProjectIssueActionOwner")
+  preparedProjectForms ProjectForm[] @relation("ProjectFormPreparedBy")
+  resourceProfile Resource? @relation("ResourceUser")
+  createdResourceBookings ResourceBooking[] @relation("ResourceBookingCreatedBy")
+  approvedResourceBookings ResourceBooking[] @relation("ResourceBookingApprovedBy")
+  leaveRequests LeaveRequest[] @relation("LeaveRequestUser")
+  leaveApprovals LeaveRequest[] @relation("LeaveRequestApprover")
+  expenseClaims ExpenseClaim[] @relation("ExpenseClaimUser")
+  approvedExpenseClaims ExpenseClaim[] @relation("ExpenseClaimApprovedBy")
+  rejectedExpenseClaims ExpenseClaim[] @relation("ExpenseClaimRejectedBy")
+  expenseClaimsPaid ExpenseClaim[] @relation("ExpenseClaimPaidBy")
+  purchaseOrdersRequested PurchaseOrder[] @relation("PurchaseOrderRequestedBy")
+  purchaseOrdersApproved PurchaseOrder[] @relation("PurchaseOrderApprovedBy")
+  goodsReceiptsReceived GoodsReceipt[] @relation("GoodsReceiptReceivedBy")
+  createdCustomerInvoices CustomerInvoice[] @relation("CustomerInvoiceCreatedBy")
+  assignedHelpdeskTickets HelpdeskTicket[] @relation("HelpdeskTicketAssignedTo")
+  raisedHelpdeskTickets HelpdeskTicket[] @relation("HelpdeskTicketRaisedByUser")
+  helpdeskComments HelpdeskTicketComment[] @relation("HelpdeskTicketCommentAuthor")
+  createdKnowledgeArticles KnowledgeArticle[] @relation("KnowledgeArticleCreatedBy")
+  updatedKnowledgeArticles KnowledgeArticle[] @relation("KnowledgeArticleUpdatedBy")
+
+  @@index([roleId])
+  @@index([isActive])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model Role {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String   @unique
+  description     String?
+  isSystemRole    Boolean  @default(true) @map("is_system_role")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  users           User[]
+  rolePermissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code            String   @unique
+  description     String?
+  module          String
+  action          String
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  rolePermissions RolePermission[]
+
+  @@index([module])
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roleId       String     @map("role_id") @db.Uuid
+  permissionId String     @map("permission_id") @db.Uuid
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@index([permissionId])
+  @@map("role_permissions")
+}
+
+model AuditLog {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  timestamp     DateTime @default(now())
+  userId        String?  @map("user_id") @db.Uuid
+  module        String
+  entityType    String   @map("entity_type")
+  entityId      String   @map("entity_id")
+  action        String
+  previousValue Json?    @map("previous_value")
+  newValue      Json?    @map("new_value")
+  ipAddress     String?  @map("ip_address")
+  userAgent     String?  @map("user_agent")
+
+  user          User?    @relation(fields: [userId], references: [id])
+
+  @@index([module])
+  @@index([entityType, entityId])
+  @@index([timestamp])
+  @@index([userId])
+  @@map("audit_logs")
+}
+
+model Notification {
+  id           String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String             @map("user_id") @db.Uuid
+  title        String
+  body         String
+  status       NotificationStatus @default(unread)
+  metadata     Json?
+  createdAt    DateTime           @default(now()) @map("created_at")
+  readAt       DateTime?          @map("read_at")
+  archivedAt   DateTime?          @map("archived_at")
+
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model Document {
+  id              String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  storageProvider DocumentStorageProvider @default(sharepoint) @map("storage_provider")
+  externalId      String?                 @map("external_id")
+  webUrl          String?                 @map("web_url")
+  folderPath      String?                 @map("folder_path")
+  storagePath     String?                 @map("storage_path")
+  versionLabel    String?                 @map("version_label")
+  fileName        String                  @map("file_name")
+  fileType        String?                 @map("file_type")
+  sizeBytes       Int?                    @map("size_bytes")
+  entityType      String?                 @map("entity_type")
+  entityId        String?                 @map("entity_id")
+  uploadedById    String?                 @map("uploaded_by_id") @db.Uuid
+  uploadedAt      DateTime                @default(now()) @map("uploaded_at")
+  deletedAt       DateTime?               @map("deleted_at")
+  deletedById     String?                 @map("deleted_by_id") @db.Uuid
+  presalesDeliverables PresalesDeliverable[]
+  projectDocumentRecords ProjectDocumentRecord[]
+  expenseLines ExpenseLine[]
+  supplierInvoices SupplierInvoice[]
+
+  @@index([entityType, entityId])
+  @@index([uploadedById])
+  @@index([deletedAt])
+  @@map("documents")
+}
+
+model Comment {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  entityType  String   @map("entity_type")
+  entityId    String   @map("entity_id")
+  body        String
+  isInternal  Boolean  @default(true) @map("is_internal")
+  createdAt   DateTime @default(now()) @map("created_at")
+  createdById String?  @map("created_by_id") @db.Uuid
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  updatedById String?  @map("updated_by_id") @db.Uuid
+  deletedAt   DateTime? @map("deleted_at")
+  deletedById String?  @map("deleted_by_id") @db.Uuid
+
+  createdBy   User?    @relation(fields: [createdById], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([createdById])
+  @@index([deletedAt])
+  @@map("comments")
+}
+
+model Account {
+  id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String
+  accountType   AccountType   @default(prospect) @map("account_type")
+  status        AccountStatus @default(prospect)
+  website       String?
+  phone         String?
+  addressLine1  String?       @map("address_line_1")
+  addressLine2  String?       @map("address_line_2")
+  city          String?
+  county        String?
+  postcode      String?
+  country       String?
+  industry      String?
+  ownerId       String        @map("owner_id") @db.Uuid
+  notes         String?
+  createdAt     DateTime      @default(now()) @map("created_at")
+  createdById   String?       @map("created_by_id") @db.Uuid
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+  updatedById   String?       @map("updated_by_id") @db.Uuid
+  deletedAt     DateTime?     @map("deleted_at")
+  deletedById   String?       @map("deleted_by_id") @db.Uuid
+
+  owner         User          @relation("AccountOwner", fields: [ownerId], references: [id])
+  createdBy     User?         @relation("AccountCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User?         @relation("AccountUpdatedBy", fields: [updatedById], references: [id])
+  deletedBy     User?         @relation("AccountDeletedBy", fields: [deletedById], references: [id])
+  contacts      Contact[]
+  leads         Lead[]
+  opportunities Opportunity[]
+  salesActivities SalesActivity[]
+  quotes        Quote[]
+  presalesRequests PresalesRequest[]
+  projects      Project[]
+  resourceBookings ResourceBooking[]
+  expenseClaims ExpenseClaim[]
+  suppliers     Supplier[]
+  customerInvoices CustomerInvoice[]
+  assets        Asset[]
+  helpdeskTickets HelpdeskTicket[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
+  @@map("accounts")
+}
+
+model Contact {
+  id                   String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  accountId            String        @map("account_id") @db.Uuid
+  firstName            String        @map("first_name")
+  lastName             String        @map("last_name")
+  jobTitle             String?       @map("job_title")
+  email                String?
+  phone                String?
+  mobile               String?
+  linkedinUrl          String?       @map("linkedin_url")
+  isPrimary            Boolean       @default(false) @map("is_primary")
+  relationshipStrength RelationshipStrength @default(unknown) @map("relationship_strength")
+  notes                String?
+  status               ContactStatus @default(active)
+  createdAt            DateTime      @default(now()) @map("created_at")
+  createdById          String?       @map("created_by_id") @db.Uuid
+  updatedAt            DateTime      @updatedAt @map("updated_at")
+  updatedById          String?       @map("updated_by_id") @db.Uuid
+  deletedAt            DateTime?     @map("deleted_at")
+  deletedById          String?       @map("deleted_by_id") @db.Uuid
+
+  account              Account       @relation(fields: [accountId], references: [id])
+  primaryForOpportunities Opportunity[] @relation("OpportunityPrimaryContact")
+  salesActivities      SalesActivity[]
+  leads                Lead[]
+  quotes               Quote[]
+  helpdeskTickets      HelpdeskTicket[]
+
+  @@index([accountId])
+  @@index([email])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("contacts")
+}
+
+model Lead {
+  id                     String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  accountId              String?    @map("account_id") @db.Uuid
+  contactId              String?    @map("contact_id") @db.Uuid
+  accountName            String?    @map("account_name")
+  contactName            String?    @map("contact_name")
+  email                  String?
+  phone                  String?
+  source                 String?
+  status                 LeadStatus @default(new)
+  estimatedValue         Decimal?   @map("estimated_value") @db.Decimal(12, 2)
+  ownerId                String     @map("owner_id") @db.Uuid
+  nextActionDate         DateTime?  @map("next_action_date") @db.Date
+  convertedAccountId     String?    @map("converted_account_id") @db.Uuid
+  convertedContactId     String?    @map("converted_contact_id") @db.Uuid
+  convertedOpportunityId String?    @map("converted_opportunity_id") @db.Uuid
+  createdAt              DateTime   @default(now()) @map("created_at")
+  createdById            String?    @map("created_by_id") @db.Uuid
+  updatedAt              DateTime   @updatedAt @map("updated_at")
+  updatedById            String?    @map("updated_by_id") @db.Uuid
+  deletedAt              DateTime?  @map("deleted_at")
+  deletedById            String?    @map("deleted_by_id") @db.Uuid
+
+  account                Account?   @relation(fields: [accountId], references: [id])
+  contact                Contact?   @relation(fields: [contactId], references: [id])
+  owner                  User       @relation("LeadOwner", fields: [ownerId], references: [id])
+  salesActivities        SalesActivity[]
+
+  @@index([accountId])
+  @@index([contactId])
+  @@index([ownerId])
+  @@index([status])
+  @@index([nextActionDate])
+  @@index([deletedAt])
+  @@map("leads")
+}
+
+model Opportunity {
+  id                 String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  accountId          String            @map("account_id") @db.Uuid
+  primaryContactId   String?           @map("primary_contact_id") @db.Uuid
+  ownerId            String            @map("owner_id") @db.Uuid
+  opportunityName    String            @map("opportunity_name")
+  opportunityType    OpportunityType   @default(other) @map("opportunity_type")
+  stage              OpportunityStage  @default(lead)
+  status             OpportunityStatus @default(open)
+  value              Decimal           @default(0) @db.Decimal(12, 2)
+  marginPercent      Decimal?          @map("margin_percent") @db.Decimal(5, 2)
+  probabilityPercent Int               @default(0) @map("probability_percent")
+  weightedValue      Decimal           @default(0) @map("weighted_value") @db.Decimal(12, 2)
+  expectedCloseDate  DateTime?         @map("expected_close_date") @db.Date
+  source             OpportunitySource? @default(other)
+  competitor         String?
+  nextActionDate     DateTime?         @map("next_action_date") @db.Date
+  lastActivityAt     DateTime?         @map("last_activity_at")
+  wonDate            DateTime?         @map("won_date") @db.Date
+  lostDate           DateTime?         @map("lost_date") @db.Date
+  lostReason         String?           @map("lost_reason")
+  notes              String?
+  createdAt          DateTime          @default(now()) @map("created_at")
+  createdById        String?           @map("created_by_id") @db.Uuid
+  updatedAt          DateTime          @updatedAt @map("updated_at")
+  updatedById        String?           @map("updated_by_id") @db.Uuid
+  deletedAt          DateTime?         @map("deleted_at")
+  deletedById        String?           @map("deleted_by_id") @db.Uuid
+
+  account            Account           @relation(fields: [accountId], references: [id])
+  primaryContact     Contact?          @relation("OpportunityPrimaryContact", fields: [primaryContactId], references: [id])
+  owner              User              @relation("OpportunityOwner", fields: [ownerId], references: [id])
+  salesActivities    SalesActivity[]
+  stageHistory       OpportunityStageHistory[]
+  quotes             Quote[]
+  presalesRequests   PresalesRequest[]
+  projects           Project[]
+  resourceBookings   ResourceBooking[]
+
+  @@index([accountId])
+  @@index([primaryContactId])
+  @@index([ownerId])
+  @@index([stage])
+  @@index([status])
+  @@index([expectedCloseDate])
+  @@index([nextActionDate])
+  @@index([lastActivityAt])
+  @@index([createdAt])
+  @@index([deletedAt])
+  @@map("opportunities")
+}
+
+model SalesActivity {
+  id            String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  accountId     String?           @map("account_id") @db.Uuid
+  contactId     String?           @map("contact_id") @db.Uuid
+  leadId        String?           @map("lead_id") @db.Uuid
+  opportunityId String?           @map("opportunity_id") @db.Uuid
+  ownerId       String            @map("owner_id") @db.Uuid
+  activityType  SalesActivityType @map("activity_type")
+  subject       String
+  description   String?
+  dueDate       DateTime?         @map("due_date")
+  completedAt   DateTime?         @map("completed_at")
+  outcome       String?
+  createdAt     DateTime          @default(now()) @map("created_at")
+  createdById   String?           @map("created_by_id") @db.Uuid
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+  updatedById   String?           @map("updated_by_id") @db.Uuid
+  deletedAt     DateTime?         @map("deleted_at")
+  deletedById   String?           @map("deleted_by_id") @db.Uuid
+
+  account       Account?          @relation(fields: [accountId], references: [id])
+  contact       Contact?          @relation(fields: [contactId], references: [id])
+  lead          Lead?             @relation(fields: [leadId], references: [id])
+  opportunity   Opportunity?      @relation(fields: [opportunityId], references: [id])
+  owner         User              @relation("SalesActivityOwner", fields: [ownerId], references: [id])
+
+  @@index([accountId])
+  @@index([contactId])
+  @@index([leadId])
+  @@index([opportunityId])
+  @@index([ownerId])
+  @@index([activityType])
+  @@index([dueDate])
+  @@index([completedAt])
+  @@index([deletedAt])
+  @@map("sales_activities")
+}
+
+model OpportunityStageHistory {
+  id            String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  opportunityId String           @map("opportunity_id") @db.Uuid
+  fromStage     OpportunityStage? @map("from_stage")
+  toStage       OpportunityStage  @map("to_stage")
+  changedAt     DateTime         @default(now()) @map("changed_at")
+  changedById   String?          @map("changed_by_id") @db.Uuid
+
+  opportunity   Opportunity      @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+
+  @@index([opportunityId])
+  @@index([changedAt])
+  @@map("opportunity_stage_history")
+}
+
+model LostReason {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String   @unique
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("lost_reasons")
+}
+
+model Product {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sku              String
+  manufacturer     String
+  supplier         String
+  supplierId       String?   @map("supplier_id") @db.Uuid
+  category         String
+  description      String
+  itemType         CatalogueItemType @default(product) @map("item_type")
+  costPrice        Decimal   @map("cost_price") @db.Decimal(12, 2)
+  defaultSellPrice Decimal   @map("default_sell_price") @db.Decimal(12, 2)
+  marginPercent    Decimal   @default(0) @map("margin_percent") @db.Decimal(7, 2)
+  leadTimeDays     Int?      @map("lead_time_days")
+  isActive         Boolean   @default(true) @map("is_active")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  createdById      String?   @map("created_by_id") @db.Uuid
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  updatedById      String?   @map("updated_by_id") @db.Uuid
+  deletedAt        DateTime? @map("deleted_at")
+  deletedById      String?   @map("deleted_by_id") @db.Uuid
+
+  quoteLines       QuoteLine[]
+  purchaseOrderLines PurchaseOrderLine[]
+  assets           Asset[]
+  supplierRecord   Supplier? @relation("ProductSupplier", fields: [supplierId], references: [id])
+
+  @@unique([supplier, sku])
+  @@index([supplier])
+  @@index([supplierId])
+  @@index([category])
+  @@index([itemType])
+  @@index([isActive])
+  @@index([deletedAt])
+  @@map("products")
+}
+
+model PriceImport {
+  id             String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  filename       String
+  supplier       String?
+  uploadedById   String            @map("uploaded_by_id") @db.Uuid
+  rowCount       Int               @default(0) @map("row_count")
+  successfulRows Int               @default(0) @map("successful_rows")
+  failedRows     Int               @default(0) @map("failed_rows")
+  status         PriceImportStatus @default(completed)
+  errorSummary   Json?             @map("error_summary")
+  createdAt      DateTime          @default(now()) @map("created_at")
+
+  uploadedBy     User              @relation("PriceImportUploadedBy", fields: [uploadedById], references: [id])
+
+  @@index([supplier])
+  @@index([uploadedById])
+  @@index([createdAt])
+  @@map("price_imports")
+}
+
+model Quote {
+  id                  String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  quoteNumber         String         @unique @map("quote_number")
+  title               String
+  customerName        String?        @map("customer_name")
+  hotelName           String?        @map("hotel_name")
+  projectName         String?        @map("project_name")
+  highLevelScope      String         @default("To be confirmed.") @map("high_level_scope")
+  preparedDate        DateTime?      @map("prepared_date") @db.Date
+  accountId           String         @map("account_id") @db.Uuid
+  opportunityId       String?        @map("opportunity_id") @db.Uuid
+  contactId           String?        @map("contact_id") @db.Uuid
+  projectChangeRequestId String?     @map("project_change_request_id") @db.Uuid
+  ownerId             String         @map("owner_id") @db.Uuid
+  status              QuoteStatus    @default(draft)
+  currentVersionNumber Int           @default(1) @map("current_version_number")
+  costTotal           Decimal        @default(0) @map("cost_total") @db.Decimal(12, 2)
+  sellTotal           Decimal        @default(0) @map("sell_total") @db.Decimal(12, 2)
+  marginTotal         Decimal        @default(0) @map("margin_total") @db.Decimal(12, 2)
+  marginPercent       Decimal        @default(0) @map("margin_percent") @db.Decimal(7, 2)
+  notes               String?
+  submittedForApprovalAt DateTime?   @map("submitted_for_approval_at")
+  approvedById        String?        @map("approved_by_id") @db.Uuid
+  approvedAt          DateTime?      @map("approved_at")
+  rejectedById        String?        @map("rejected_by_id") @db.Uuid
+  rejectedAt          DateTime?      @map("rejected_at")
+  sentAt              DateTime?      @map("sent_at")
+  acceptedAt          DateTime?      @map("accepted_at")
+  declinedAt          DateTime?      @map("declined_at")
+  expiredAt           DateTime?      @map("expired_at")
+  createdAt           DateTime       @default(now()) @map("created_at")
+  createdById         String?        @map("created_by_id") @db.Uuid
+  updatedAt           DateTime       @updatedAt @map("updated_at")
+  updatedById         String?        @map("updated_by_id") @db.Uuid
+  deletedAt           DateTime?      @map("deleted_at")
+  deletedById         String?        @map("deleted_by_id") @db.Uuid
+
+  account             Account        @relation(fields: [accountId], references: [id])
+  opportunity         Opportunity?   @relation(fields: [opportunityId], references: [id])
+  contact             Contact?       @relation(fields: [contactId], references: [id])
+  projectChangeRequest ProjectForm?  @relation("ProjectChangeRequestQuote", fields: [projectChangeRequestId], references: [id])
+  owner               User           @relation("QuoteOwner", fields: [ownerId], references: [id])
+  versions            QuoteVersion[]
+  approvalRequests    QuoteApprovalRequest[]
+  exports             QuoteExport[]
+  presalesRequests    PresalesRequest[]
+  projects            Project[]
+  purchaseOrders      PurchaseOrder[]
+  customerInvoices    CustomerInvoice[]
+
+  @@index([accountId])
+  @@index([opportunityId])
+  @@index([contactId])
+  @@index([projectChangeRequestId])
+  @@index([ownerId])
+  @@index([status])
+  @@index([submittedForApprovalAt])
+  @@index([createdAt])
+  @@index([deletedAt])
+  @@map("quotes")
+}
+
+model QuoteVersion {
+  id             String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  quoteId        String      @map("quote_id") @db.Uuid
+  versionNumber  Int         @map("version_number")
+  status         QuoteStatus @default(draft)
+  isLocked       Boolean     @default(false) @map("is_locked")
+  costTotal      Decimal     @default(0) @map("cost_total") @db.Decimal(12, 2)
+  sellTotal      Decimal     @default(0) @map("sell_total") @db.Decimal(12, 2)
+  marginTotal    Decimal     @default(0) @map("margin_total") @db.Decimal(12, 2)
+  marginPercent  Decimal     @default(0) @map("margin_percent") @db.Decimal(7, 2)
+  notes          String?
+  terms          String      @default("Quote is valid for 30 days from date of issue.\nPayment terms are 75% upfront, 25% on completion unless stated otherwise.\nOn site works require the provision of accommodation at a rate of 1 room per engineer, parking and access to food & beverage for the entirety of the project. If this is not possible, accommodation and subsistence costs will apply.")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  createdById    String?     @map("created_by_id") @db.Uuid
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+  updatedById    String?     @map("updated_by_id") @db.Uuid
+
+  quote          Quote       @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  lines          QuoteLine[]
+  approvalRequests QuoteApprovalRequest[]
+  exports        QuoteExport[]
+  projects       Project[]
+
+  @@unique([quoteId, versionNumber])
+  @@index([quoteId])
+  @@index([status])
+  @@index([isLocked])
+  @@map("quote_versions")
+}
+
+model QuoteLine {
+  id                String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  quoteVersionId    String        @map("quote_version_id") @db.Uuid
+  productId         String?       @map("product_id") @db.Uuid
+  lineType          QuoteLineType @map("line_type")
+  description       String
+  quantity          Decimal       @default(1) @db.Decimal(12, 2)
+  unitCost          Decimal       @default(0) @map("unit_cost") @db.Decimal(12, 2)
+  unitSell          Decimal       @default(0) @map("unit_sell") @db.Decimal(12, 2)
+  costTotal         Decimal       @default(0) @map("cost_total") @db.Decimal(12, 2)
+  sellTotal         Decimal       @default(0) @map("sell_total") @db.Decimal(12, 2)
+  marginTotal       Decimal       @default(0) @map("margin_total") @db.Decimal(12, 2)
+  marginPercent     Decimal       @default(0) @map("margin_percent") @db.Decimal(7, 2)
+  sortOrder         Int           @default(0) @map("sort_order")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  createdById       String?       @map("created_by_id") @db.Uuid
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+  updatedById       String?       @map("updated_by_id") @db.Uuid
+  deletedAt         DateTime?     @map("deleted_at")
+  deletedById       String?       @map("deleted_by_id") @db.Uuid
+
+  quoteVersion      QuoteVersion  @relation(fields: [quoteVersionId], references: [id], onDelete: Cascade)
+  product           Product?      @relation(fields: [productId], references: [id])
+
+  @@index([quoteVersionId])
+  @@index([productId])
+  @@index([lineType])
+  @@index([deletedAt])
+  @@map("quote_lines")
+}
+
+model QuoteApprovalRequest {
+  id             String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  quoteId        String              @map("quote_id") @db.Uuid
+  quoteVersionId String              @map("quote_version_id") @db.Uuid
+  requestedById  String              @map("requested_by_id") @db.Uuid
+  approverId     String?             @map("approver_id") @db.Uuid
+  status         QuoteApprovalStatus @default(pending)
+  reason         String
+  comments       String?
+  requestedAt    DateTime            @default(now()) @map("requested_at")
+  decidedAt      DateTime?           @map("decided_at")
+
+  quote          Quote               @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  quoteVersion   QuoteVersion        @relation(fields: [quoteVersionId], references: [id], onDelete: Cascade)
+  requestedBy    User                @relation("QuoteApprovalRequestedBy", fields: [requestedById], references: [id])
+  approver       User?               @relation("QuoteApprovalApprover", fields: [approverId], references: [id])
+
+  @@index([quoteId])
+  @@index([quoteVersionId])
+  @@index([requestedById])
+  @@index([approverId])
+  @@index([status])
+  @@index([requestedAt])
+  @@map("quote_approval_requests")
+}
+
+model QuoteApprovalRule {
+  id                 String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ruleType           QuoteApprovalRuleType @unique @map("rule_type")
+  thresholdValue     Decimal?              @map("threshold_value") @db.Decimal(12, 2)
+  requiredPermission String                @map("required_permission")
+  isActive           Boolean               @default(true) @map("is_active")
+  createdAt          DateTime              @default(now()) @map("created_at")
+  updatedAt          DateTime              @updatedAt @map("updated_at")
+
+  @@index([isActive])
+  @@map("quote_approval_rules")
+}
+
+model QuoteExport {
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  quoteId        String          @map("quote_id") @db.Uuid
+  quoteVersionId String          @map("quote_version_id") @db.Uuid
+  exportType     QuoteExportType @map("export_type")
+  filename       String
+  generatedById  String          @map("generated_by_id") @db.Uuid
+  generatedAt    DateTime        @default(now()) @map("generated_at")
+
+  quote          Quote           @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  quoteVersion   QuoteVersion    @relation(fields: [quoteVersionId], references: [id], onDelete: Cascade)
+  generatedBy    User            @relation("QuoteExportGeneratedBy", fields: [generatedById], references: [id])
+
+  @@index([quoteId])
+  @@index([quoteVersionId])
+  @@index([exportType])
+  @@index([generatedById])
+  @@index([generatedAt])
+  @@map("quote_exports")
+}
+
+model PresalesRequest {
+  id                    String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requestNumber         String                     @unique @map("request_number")
+  accountId             String                     @map("account_id") @db.Uuid
+  opportunityId         String?                    @map("opportunity_id") @db.Uuid
+  quoteId               String?                    @map("quote_id") @db.Uuid
+  requestedById         String                     @map("requested_by_id") @db.Uuid
+  assignedToId          String?                    @map("assigned_to_id") @db.Uuid
+  requestCategory       PresalesRequestCategory    @map("request_category")
+  requestType           PresalesRequestType        @map("request_type")
+  priority              PresalesPriority           @default(normal)
+  commercialPriority    PresalesCommercialPriority @default(normal) @map("commercial_priority")
+  status                PresalesRequestStatus      @default(submitted)
+  slaStatus             PresalesSlaStatus          @default(on_track) @map("sla_status")
+  ragStatus             PresalesRagStatus          @default(green) @map("rag_status")
+  description           String
+  requestedDeliveryDate DateTime?                  @map("requested_delivery_date") @db.Date
+  internalDeadline      DateTime                   @map("internal_deadline") @db.Date
+  estimatedHours        Decimal?                   @map("estimated_hours") @db.Decimal(8, 2)
+  actualHours           Decimal?                   @map("actual_hours") @db.Decimal(8, 2)
+  quoteValueSnapshot    Decimal?                   @map("quote_value_snapshot") @db.Decimal(12, 2)
+  quoteVersionSnapshot  Int?                       @map("quote_version_snapshot")
+  sharePointFolderUrl   String?                    @map("sharepoint_folder_url")
+  submittedAt           DateTime                   @default(now()) @map("submitted_at")
+  completedAt           DateTime?                  @map("completed_at")
+  readyForProject       Boolean                    @default(false) @map("ready_for_project")
+  createdAt             DateTime                   @default(now()) @map("created_at")
+  createdById           String?                    @map("created_by_id") @db.Uuid
+  updatedAt             DateTime                   @updatedAt @map("updated_at")
+  updatedById           String?                    @map("updated_by_id") @db.Uuid
+  deletedAt             DateTime?                  @map("deleted_at")
+  deletedById           String?                    @map("deleted_by_id") @db.Uuid
+
+  account               Account                    @relation(fields: [accountId], references: [id])
+  opportunity           Opportunity?               @relation(fields: [opportunityId], references: [id])
+  quote                 Quote?                     @relation(fields: [quoteId], references: [id])
+  requestedBy           User                       @relation("PresalesRequestRequestedBy", fields: [requestedById], references: [id])
+  assignedTo            User?                      @relation("PresalesRequestAssignedTo", fields: [assignedToId], references: [id])
+  tasks                 PresalesTask[]
+  deliverables          PresalesDeliverable[]
+  projects              Project[]
+
+  @@index([accountId])
+  @@index([opportunityId])
+  @@index([quoteId])
+  @@index([requestedById])
+  @@index([assignedToId])
+  @@index([status])
+  @@index([slaStatus])
+  @@index([ragStatus])
+  @@index([internalDeadline])
+  @@index([deletedAt])
+  @@map("presales_requests")
+}
+
+model PresalesDeliverable {
+  id                String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  presalesRequestId String                  @map("presales_request_id") @db.Uuid
+  deliverableType   PresalesDeliverableType @map("deliverable_type")
+  title             String
+  description       String?
+  assignedToId      String?                 @map("assigned_to_id") @db.Uuid
+  status            PresalesDeliverableStatus @default(open)
+  dueDate           DateTime?               @map("due_date") @db.Date
+  completedAt       DateTime?               @map("completed_at")
+  documentId        String?                 @map("document_id") @db.Uuid
+  uploadedById      String?                 @map("uploaded_by_id") @db.Uuid
+  uploadedAt        DateTime?               @map("uploaded_at")
+  createdAt         DateTime                @default(now()) @map("created_at")
+  updatedAt         DateTime                @updatedAt @map("updated_at")
+
+  presalesRequest   PresalesRequest         @relation(fields: [presalesRequestId], references: [id], onDelete: Cascade)
+  document          Document?               @relation(fields: [documentId], references: [id])
+  uploadedBy        User?                   @relation("PresalesDeliverableUploadedBy", fields: [uploadedById], references: [id])
+  assignedTo        User?                   @relation("PresalesDeliverableAssignedTo", fields: [assignedToId], references: [id])
+
+  @@unique([presalesRequestId, title])
+  @@index([presalesRequestId])
+  @@index([assignedToId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([documentId])
+  @@index([uploadedById])
+  @@index([deliverableType])
+  @@map("presales_deliverables")
+}
+
+model PresalesTask {
+  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  presalesRequestId String             @map("presales_request_id") @db.Uuid
+  title             String
+  description       String?
+  assignedToId      String?            @map("assigned_to_id") @db.Uuid
+  status            PresalesTaskStatus @default(open)
+  dueDate           DateTime?          @map("due_date") @db.Date
+  completedAt       DateTime?          @map("completed_at")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  createdById       String?            @map("created_by_id") @db.Uuid
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+  updatedById       String?            @map("updated_by_id") @db.Uuid
+  deletedAt         DateTime?          @map("deleted_at")
+  deletedById       String?            @map("deleted_by_id") @db.Uuid
+
+  presalesRequest   PresalesRequest    @relation(fields: [presalesRequestId], references: [id], onDelete: Cascade)
+  assignedTo        User?              @relation("PresalesTaskAssignedTo", fields: [assignedToId], references: [id])
+
+  @@index([presalesRequestId])
+  @@index([assignedToId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([deletedAt])
+  @@map("presales_tasks")
+}
+
+model Project {
+  id                         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectNumber              String       @unique @map("project_number")
+  name                       String
+  projectType                OpportunityType @default(other) @map("project_type")
+  accountId                  String       @map("account_id") @db.Uuid
+  opportunityId              String       @map("opportunity_id") @db.Uuid
+  quoteId                    String       @map("quote_id") @db.Uuid
+  quoteVersionId             String       @map("quote_version_id") @db.Uuid
+  presalesRequestId          String?      @map("presales_request_id") @db.Uuid
+  projectManagerId           String?      @map("project_manager_id") @db.Uuid
+  status                     ProjectStatus @default(draft)
+  ragStatus                  ProjectRagStatus @default(green) @map("rag_status")
+  startDate                  DateTime?    @map("start_date") @db.Date
+  targetEndDate              DateTime?    @map("target_end_date") @db.Date
+  baselineStartDate          DateTime?    @map("baseline_start_date") @db.Date
+  baselineEndDate            DateTime?    @map("baseline_end_date") @db.Date
+  planBaselinedAt            DateTime?    @map("plan_baselined_at")
+  planBaselinedById          String?      @map("plan_baselined_by_id") @db.Uuid
+  actualStartDate            DateTime?    @map("actual_start_date") @db.Date
+  actualEndDate              DateTime?    @map("actual_end_date") @db.Date
+  description                String?
+  scopeSummary               String?      @map("scope_summary")
+  commercialValue            Decimal      @default(0) @map("commercial_value") @db.Decimal(12, 2)
+  budgetCost                 Decimal      @default(0) @map("budget_cost") @db.Decimal(12, 2)
+  budgetSell                 Decimal      @default(0) @map("budget_sell") @db.Decimal(12, 2)
+  paymentTerms               String?      @map("payment_terms")
+  invoicedAmount             Decimal      @default(0) @map("invoiced_amount") @db.Decimal(12, 2)
+  collectedAmount            Decimal      @default(0) @map("collected_amount") @db.Decimal(12, 2)
+  outstandingAmount          Decimal      @default(0) @map("outstanding_amount") @db.Decimal(12, 2)
+  totalResourceDaysBudget    Decimal      @default(0) @map("total_resource_days_budget") @db.Decimal(8, 2)
+  totalResourceDaysScheduled Decimal      @default(0) @map("total_resource_days_scheduled") @db.Decimal(8, 2)
+  totalResourceDaysUsed      Decimal      @default(0) @map("total_resource_days_used") @db.Decimal(8, 2)
+  createdAt                  DateTime     @default(now()) @map("created_at")
+  createdById                String?      @map("created_by_id") @db.Uuid
+  updatedAt                  DateTime     @updatedAt @map("updated_at")
+  updatedById                String?      @map("updated_by_id") @db.Uuid
+  deletedAt                  DateTime?    @map("deleted_at")
+  deletedById                String?      @map("deleted_by_id") @db.Uuid
+
+  account                    Account      @relation(fields: [accountId], references: [id])
+  opportunity                Opportunity  @relation(fields: [opportunityId], references: [id])
+  quote                      Quote        @relation(fields: [quoteId], references: [id])
+  quoteVersion               QuoteVersion @relation(fields: [quoteVersionId], references: [id])
+  presalesRequest            PresalesRequest? @relation(fields: [presalesRequestId], references: [id])
+  projectManager             User?        @relation("ProjectManager", fields: [projectManagerId], references: [id])
+  planBaselinedBy            User?        @relation("ProjectPlanBaselinedBy", fields: [planBaselinedById], references: [id])
+  createdBy                  User?        @relation("ProjectCreatedBy", fields: [createdById], references: [id])
+  updatedBy                  User?        @relation("ProjectUpdatedBy", fields: [updatedById], references: [id])
+  deletedBy                  User?        @relation("ProjectDeletedBy", fields: [deletedById], references: [id])
+  tasks                      ProjectTask[]
+  milestones                 ProjectMilestone[]
+  stageGates                 ProjectStageGate[]
+  dependencies               ProjectTaskDependency[]
+  resourceAssignments        ProjectResourceAssignment[]
+  resourceBookings           ResourceBooking[]
+  activities                 ProjectActivity[]
+  issueActions               ProjectIssueAction[]
+  documentRecords            ProjectDocumentRecord[]
+  financialEntries           ProjectFinancialEntry[]
+  equipmentItems             ProjectEquipmentItem[]
+  forms                      ProjectForm[]
+  expenseClaims              ExpenseClaim[]
+  expenseLines               ExpenseLine[]
+  purchaseOrders             PurchaseOrder[]
+  customerInvoices           CustomerInvoice[]
+  billingSchedules           BillingSchedule[]
+  assets                     Asset[]
+  helpdeskTickets            HelpdeskTicket[]
+
+  @@index([accountId])
+  @@index([opportunityId])
+  @@index([quoteId])
+  @@index([quoteVersionId])
+  @@index([presalesRequestId])
+  @@index([projectManagerId])
+  @@index([projectType])
+  @@index([status])
+  @@index([ragStatus])
+  @@index([startDate])
+  @@index([targetEndDate])
+  @@index([baselineEndDate])
+  @@index([planBaselinedById])
+  @@index([deletedAt])
+  @@map("projects")
+}
+
+model ProjectMilestone {
+  id            String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectId     String                 @map("project_id") @db.Uuid
+  title         String
+  description   String?
+  milestoneDate DateTime               @map("milestone_date") @db.Date
+  baselineDate  DateTime?              @map("baseline_date") @db.Date
+  manualDateOverride Boolean           @default(false) @map("manual_date_override")
+  status        ProjectMilestoneStatus @default(not_started)
+  ownerId       String?                @map("owner_id") @db.Uuid
+  completedAt   DateTime?              @map("completed_at")
+  sortOrder     Int                    @default(0) @map("sort_order")
+  createdAt     DateTime               @default(now()) @map("created_at")
+  updatedAt     DateTime               @updatedAt @map("updated_at")
+  deletedAt     DateTime?              @map("deleted_at")
+
+  project       Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  owner         User?                  @relation("ProjectMilestoneOwner", fields: [ownerId], references: [id])
+
+  @@unique([projectId, title])
+  @@index([projectId])
+  @@index([ownerId])
+  @@index([status])
+  @@index([milestoneDate])
+  @@index([deletedAt])
+  @@map("project_milestones")
+}
+
+model ProjectStageGate {
+  id            String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectId     String               @map("project_id") @db.Uuid
+  stage         ProjectDeliveryStage
+  status        StageGateStatus      @default(not_started)
+  completedAt   DateTime?            @map("completed_at")
+  completedById String?              @map("completed_by_id") @db.Uuid
+  notes         String?
+  createdAt     DateTime             @default(now()) @map("created_at")
+  updatedAt     DateTime             @updatedAt @map("updated_at")
+
+  project       Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  completedBy   User?                @relation("ProjectStageGateCompletedBy", fields: [completedById], references: [id])
+
+  @@unique([projectId, stage])
+  @@index([projectId])
+  @@index([stage])
+  @@index([status])
+  @@index([completedById])
+  @@map("project_stage_gates")
+}
+
+model ProjectTask {
+  id            String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectId     String            @map("project_id") @db.Uuid
+  title         String
+  description   String?
+  status        ProjectTaskStatus @default(not_started)
+  ownerId       String?           @map("owner_id") @db.Uuid
+  assignedToId  String?           @map("assigned_to_id") @db.Uuid
+  startDate     DateTime          @map("start_date") @db.Date
+  endDate       DateTime          @map("end_date") @db.Date
+  baselineStartDate DateTime?     @map("baseline_start_date") @db.Date
+  baselineEndDate   DateTime?     @map("baseline_end_date") @db.Date
+  estimatedDays Decimal           @default(0) @map("estimated_days") @db.Decimal(8, 2)
+  baselineEstimatedDays Decimal?  @map("baseline_estimated_days") @db.Decimal(8, 2)
+  actualDays    Decimal           @default(0) @map("actual_days") @db.Decimal(8, 2)
+  sortOrder     Int               @default(0) @map("sort_order")
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+  deletedAt     DateTime?         @map("deleted_at")
+
+  project       Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  owner         User?             @relation("ProjectTaskOwner", fields: [ownerId], references: [id])
+  assignedTo    User?             @relation("ProjectTaskAssignedTo", fields: [assignedToId], references: [id])
+  predecessors  ProjectTaskDependency[] @relation("ProjectTaskPredecessor")
+  successors    ProjectTaskDependency[] @relation("ProjectTaskSuccessor")
+
+  @@index([projectId])
+  @@index([ownerId])
+  @@index([assignedToId])
+  @@index([status])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([baselineEndDate])
+  @@index([deletedAt])
+  @@map("project_tasks")
+}
+
+model ProjectTaskDependency {
+  id                String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectId         String                @map("project_id") @db.Uuid
+  predecessorTaskId String                @map("predecessor_task_id") @db.Uuid
+  successorTaskId   String                @map("successor_task_id") @db.Uuid
+  dependencyType    ProjectDependencyType @default(finish_to_start) @map("dependency_type")
+  lagDays           Int                   @default(0) @map("lag_days")
+  createdAt         DateTime              @default(now()) @map("created_at")
+
+  project           Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  predecessorTask   ProjectTask           @relation("ProjectTaskPredecessor", fields: [predecessorTaskId], references: [id], onDelete: Cascade)
+  successorTask     ProjectTask           @relation("ProjectTaskSuccessor", fields: [successorTaskId], references: [id], onDelete: Cascade)
+
+  @@unique([predecessorTaskId, successorTaskId])
+  @@index([projectId])
+  @@index([predecessorTaskId])
+  @@index([successorTaskId])
+  @@map("project_task_dependencies")
+}
+
+model ProjectResourceAssignment {
+  id            String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectId     String              @map("project_id") @db.Uuid
+  resourceId    String?             @map("resource_id") @db.Uuid
+  userId        String?             @map("user_id") @db.Uuid
+  role          ProjectResourceRole @default(project_engineer)
+  startDate     DateTime            @map("start_date") @db.Date
+  endDate       DateTime            @map("end_date") @db.Date
+  scheduledDays Decimal             @default(0) @map("scheduled_days") @db.Decimal(8, 2)
+  usedDays      Decimal             @default(0) @map("used_days") @db.Decimal(8, 2)
+  notes         String?
+  conflictOverride Boolean          @default(false) @map("conflict_override")
+  conflictOverrideNote String?      @map("conflict_override_note")
+  createdAt     DateTime            @default(now()) @map("created_at")
+  updatedAt     DateTime            @updatedAt @map("updated_at")
+  deletedAt     DateTime?           @map("deleted_at")
+
+  project       Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  resource      Resource?           @relation(fields: [resourceId], references: [id])
+  user          User?               @relation(fields: [userId], references: [id])
+
+  @@index([projectId])
+  @@index([resourceId])
+  @@index([userId])
+  @@index([role])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([deletedAt])
+  @@map("project_resource_assignments")
+}
+
+model ProjectActivity {
+  id            String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectId     String              @map("project_id") @db.Uuid
+  activityType  ProjectActivityType @map("activity_type")
+  subject       String
+  description   String?
+  ownerId       String?             @map("owner_id") @db.Uuid
+  assignedToId  String?             @map("assigned_to_id") @db.Uuid
+  startDate     DateTime?           @map("start_date")
+  endDate       DateTime?           @map("end_date")
+  completedAt   DateTime?           @map("completed_at")
+  outcome       String?
+  createdAt     DateTime            @default(now()) @map("created_at")
+  updatedAt     DateTime            @updatedAt @map("updated_at")
+  deletedAt     DateTime?           @map("deleted_at")
+
+  project       Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  owner         User?               @relation("ProjectActivityOwner", fields: [ownerId], references: [id])
+  assignedTo    User?               @relation("ProjectActivityAssignedTo", fields: [assignedToId], references: [id])
+
+  @@index([projectId])
+  @@index([activityType])
+  @@index([ownerId])
+  @@index([assignedToId])
+  @@index([startDate])
+  @@index([deletedAt])
+  @@map("project_activities")
+}
+
+model ProjectIssueAction {
+  id          String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectId   String                   @map("project_id") @db.Uuid
+  type        ProjectIssueActionType
+  title       String
+  description String?
+  ownerId     String?                  @map("owner_id") @db.Uuid
+  status      ProjectIssueActionStatus @default(open)
+  priority    ProjectPriority          @default(normal)
+  dueDate     DateTime?                @map("due_date") @db.Date
+  closedAt    DateTime?                @map("closed_at")
+  resolution  String?
+  createdAt   DateTime                 @default(now()) @map("created_at")
+  updatedAt   DateTime                 @updatedAt @map("updated_at")
+  deletedAt   DateTime?                @map("deleted_at")
+
+  project     Project                  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  owner       User?                    @relation("ProjectIssueActionOwner", fields: [ownerId], references: [id])
+
+  @@index([projectId])
+  @@index([type])
+  @@index([status])
+  @@index([priority])
+  @@index([ownerId])
+  @@index([dueDate])
+  @@index([deletedAt])
+  @@map("project_issue_actions")
+}
+
+model ProjectDocumentRecord {
+  id           String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectId    String              @map("project_id") @db.Uuid
+  documentId   String              @map("document_id") @db.Uuid
+  documentType ProjectDocumentType @default(other) @map("document_type")
+  createdAt    DateTime            @default(now()) @map("created_at")
+
+  project      Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  document     Document            @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([documentId])
+  @@index([documentType])
+  @@map("project_document_records")
+}
+
+model ProjectFinancialEntry {
+  id          String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectId   String                    @map("project_id") @db.Uuid
+  type        ProjectFinancialEntryType
+  description String
+  amount      Decimal                   @default(0) @db.Decimal(12, 2)
+  status      ProjectFinancialEntryStatus @default(planned)
+  reference   String?
+  expectedDate DateTime?                @map("expected_date") @db.Date
+  actualDate  DateTime?                 @map("actual_date") @db.Date
+  createdAt   DateTime                  @default(now()) @map("created_at")
+  updatedAt   DateTime                  @updatedAt @map("updated_at")
+
+  project     Project                   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([type])
+  @@index([status])
+  @@index([expectedDate])
+  @@map("project_financial_entries")
+}
+
+model ProjectEquipmentItem {
+  id                    String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectId             String                     @map("project_id") @db.Uuid
+  sourceChangeRequestId String?                    @map("source_change_request_id") @db.Uuid
+  sku                   String?
+  manufacturer          String?
+  supplier              String?
+  description           String
+  quantity              Decimal                    @default(1) @db.Decimal(12, 2)
+  unitCost              Decimal                    @default(0) @map("unit_cost") @db.Decimal(12, 2)
+  unitSell              Decimal                    @default(0) @map("unit_sell") @db.Decimal(12, 2)
+  status                ProjectEquipmentItemStatus @default(required)
+  createdAt             DateTime                   @default(now()) @map("created_at")
+  updatedAt             DateTime                   @updatedAt @map("updated_at")
+
+  project               Project                    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sourceChangeRequest   ProjectForm?               @relation(fields: [sourceChangeRequestId], references: [id])
+
+  @@index([projectId])
+  @@index([sourceChangeRequestId])
+  @@index([status])
+  @@map("project_equipment_items")
+}
+
+model ProjectForm {
+  id           String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectId    String          @map("project_id") @db.Uuid
+  formType     ProjectFormType @map("form_type")
+  title        String
+  preparedById String?         @map("prepared_by_id") @db.Uuid
+  formDate     DateTime        @default(now()) @map("form_date") @db.Date
+  content      Json
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+  deletedAt    DateTime?       @map("deleted_at")
+
+  project      Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  preparedBy   User?           @relation("ProjectFormPreparedBy", fields: [preparedById], references: [id])
+  equipmentItems ProjectEquipmentItem[]
+  changeQuotes Quote[]         @relation("ProjectChangeRequestQuote")
+  purchaseOrders PurchaseOrder[] @relation("PurchaseOrderChangeRequest")
+
+  @@index([projectId])
+  @@index([formType])
+  @@index([formDate])
+  @@index([deletedAt])
+  @@map("project_forms")
+}
+
+model ProjectTaskTemplate {
+  id          String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  projectType String                    @map("project_type")
+  isActive    Boolean                   @default(true) @map("is_active")
+  createdAt   DateTime                  @default(now()) @map("created_at")
+  updatedAt   DateTime                  @updatedAt @map("updated_at")
+
+  items       ProjectTaskTemplateItem[]
+
+  @@index([projectType])
+  @@index([isActive])
+  @@map("project_task_templates")
+}
+
+model ProjectTaskTemplateItem {
+  id                  String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  templateId          String              @map("template_id") @db.Uuid
+  title               String
+  description         String?
+  defaultOwnerRole    ProjectResourceRole? @map("default_owner_role")
+  offsetDaysFromStart Int                 @default(0) @map("offset_days_from_start")
+  defaultDurationDays Int                 @default(1) @map("default_duration_days")
+  sortOrder           Int                 @default(0) @map("sort_order")
+
+  template            ProjectTaskTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId])
+  @@index([sortOrder])
+  @@map("project_task_template_items")
+}
+
+model Resource {
+  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  resourceType    ResourceType @map("resource_type")
+  userId          String?      @unique @map("user_id") @db.Uuid
+  displayName     String       @map("display_name")
+  companyName     String?      @map("company_name")
+  roleType        String?      @map("role_type")
+  skillTags       String[]     @default([]) @map("skill_tags")
+  phone           String?
+  email           String?
+  address         String?
+  agentName       String?      @map("agent_name")
+  agentPhone      String?      @map("agent_phone")
+  agentEmail      String?      @map("agent_email")
+  standardDayCost Decimal      @default(0) @map("standard_day_cost") @db.Decimal(12, 2)
+  standardDaySell Decimal      @default(0) @map("standard_day_sell") @db.Decimal(12, 2)
+  halfDayCost     Decimal      @default(0) @map("half_day_cost") @db.Decimal(12, 2)
+  halfDaySell     Decimal      @default(0) @map("half_day_sell") @db.Decimal(12, 2)
+  hourlyCost      Decimal      @default(0) @map("hourly_cost") @db.Decimal(12, 2)
+  hourlySell      Decimal      @default(0) @map("hourly_sell") @db.Decimal(12, 2)
+  notes           String?
+  active          Boolean      @default(true)
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+  deletedAt       DateTime?    @map("deleted_at")
+
+  user            User?        @relation("ResourceUser", fields: [userId], references: [id])
+  bookings        ResourceBooking[]
+  projectAssignments ProjectResourceAssignment[]
+
+  @@index([resourceType])
+  @@index([active])
+  @@index([displayName])
+  @@index([deletedAt])
+  @@map("resources")
+}
+
+model ResourceBooking {
+  id               String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  resourceId       String                @map("resource_id") @db.Uuid
+  projectId        String?               @map("project_id") @db.Uuid
+  accountId        String?               @map("account_id") @db.Uuid
+  opportunityId    String?               @map("opportunity_id") @db.Uuid
+  helpdeskTicketId String?               @map("helpdesk_ticket_id") @db.Uuid
+  bookingType      ResourceBookingType   @map("booking_type")
+  title            String
+  description      String?
+  location         String?
+  startDate        DateTime              @map("start_date") @db.Date
+  endDate          DateTime              @map("end_date") @db.Date
+  startTime        DateTime?             @map("start_time")
+  endTime          DateTime?             @map("end_time")
+  workingDays      Decimal               @default(0) @map("working_days") @db.Decimal(8, 2)
+  costRate         Decimal               @default(0) @map("cost_rate") @db.Decimal(12, 2)
+  sellRate         Decimal               @default(0) @map("sell_rate") @db.Decimal(12, 2)
+  costTotal        Decimal               @default(0) @map("cost_total") @db.Decimal(12, 2)
+  sellTotal        Decimal               @default(0) @map("sell_total") @db.Decimal(12, 2)
+  chargeable       Boolean               @default(true)
+  status           ResourceBookingStatus @default(draft)
+  conflictStatus   BookingConflictStatus @default(clear) @map("conflict_status")
+  overrideReason   String?               @map("override_reason")
+  createdById      String?               @map("created_by_id") @db.Uuid
+  approvedById     String?               @map("approved_by_id") @db.Uuid
+  createdAt        DateTime              @default(now()) @map("created_at")
+  updatedAt        DateTime              @updatedAt @map("updated_at")
+  deletedAt        DateTime?             @map("deleted_at")
+
+  resource         Resource              @relation(fields: [resourceId], references: [id])
+  project          Project?              @relation(fields: [projectId], references: [id])
+  account          Account?              @relation(fields: [accountId], references: [id])
+  opportunity      Opportunity?          @relation(fields: [opportunityId], references: [id])
+  helpdeskTicket   HelpdeskTicket?       @relation(fields: [helpdeskTicketId], references: [id])
+  createdBy        User?                 @relation("ResourceBookingCreatedBy", fields: [createdById], references: [id])
+  approvedBy       User?                 @relation("ResourceBookingApprovedBy", fields: [approvedById], references: [id])
+  expenseClaims    ExpenseClaim[]
+  expenseLines     ExpenseLine[]
+
+  @@index([resourceId])
+  @@index([projectId])
+  @@index([accountId])
+  @@index([opportunityId])
+  @@index([helpdeskTicketId])
+  @@index([bookingType])
+  @@index([status])
+  @@index([conflictStatus])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([deletedAt])
+  @@map("resource_bookings")
+}
+
+model LeaveRequest {
+  id              String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String      @map("user_id") @db.Uuid
+  startDate       DateTime    @map("start_date") @db.Date
+  endDate         DateTime    @map("end_date") @db.Date
+  workingDays     Decimal     @default(0) @map("working_days") @db.Decimal(8, 2)
+  leaveType       LeaveType   @map("leave_type")
+  status          LeaveStatus @default(draft)
+  reason          String?
+  approverId      String?     @map("approver_id") @db.Uuid
+  approvedAt      DateTime?   @map("approved_at")
+  rejectedAt      DateTime?   @map("rejected_at")
+  rejectionReason String?     @map("rejection_reason")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+  deletedAt       DateTime?   @map("deleted_at")
+
+  user            User        @relation("LeaveRequestUser", fields: [userId], references: [id])
+  approver        User?       @relation("LeaveRequestApprover", fields: [approverId], references: [id])
+
+  @@index([userId])
+  @@index([approverId])
+  @@index([leaveType])
+  @@index([status])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([deletedAt])
+  @@map("leave_requests")
+}
+
+model ExpenseClaim {
+  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  claimNumber       String             @unique @map("claim_number")
+  userId            String             @map("user_id") @db.Uuid
+  projectId         String?            @map("project_id") @db.Uuid
+  resourceBookingId String?            @map("resource_booking_id") @db.Uuid
+  accountId         String?            @map("account_id") @db.Uuid
+  status            ExpenseClaimStatus @default(draft)
+  submittedAt       DateTime?          @map("submitted_at")
+  approvedById      String?            @map("approved_by_id") @db.Uuid
+  approvedAt        DateTime?          @map("approved_at")
+  rejectedById      String?            @map("rejected_by_id") @db.Uuid
+  rejectedAt        DateTime?          @map("rejected_at")
+  rejectionReason   String?            @map("rejection_reason")
+  paidById          String?            @map("paid_by_id") @db.Uuid
+  paidAt            DateTime?          @map("paid_at")
+  totalAmount       Decimal            @default(0) @map("total_amount") @db.Decimal(12, 2)
+  currency          String             @default("GBP")
+  notes             String?
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+  deletedAt         DateTime?          @map("deleted_at")
+
+  user              User               @relation("ExpenseClaimUser", fields: [userId], references: [id])
+  project           Project?           @relation(fields: [projectId], references: [id])
+  resourceBooking   ResourceBooking?   @relation(fields: [resourceBookingId], references: [id])
+  account           Account?           @relation(fields: [accountId], references: [id])
+  approvedBy        User?              @relation("ExpenseClaimApprovedBy", fields: [approvedById], references: [id])
+  rejectedBy        User?              @relation("ExpenseClaimRejectedBy", fields: [rejectedById], references: [id])
+  paidBy            User?              @relation("ExpenseClaimPaidBy", fields: [paidById], references: [id])
+  lines             ExpenseLine[]
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([resourceBookingId])
+  @@index([accountId])
+  @@index([status])
+  @@index([submittedAt])
+  @@index([deletedAt])
+  @@map("expense_claims")
+}
+
+model ExpenseLine {
+  id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  claimId           String           @map("claim_id") @db.Uuid
+  expenseDate       DateTime         @map("expense_date") @db.Date
+  category          ExpenseCategory
+  description       String
+  amount            Decimal          @db.Decimal(12, 2)
+  vatAmount         Decimal?         @map("vat_amount") @db.Decimal(12, 2)
+  currency          String           @default("GBP")
+  receiptDocumentId String?          @map("receipt_document_id") @db.Uuid
+  mileageMiles      Decimal?         @map("mileage_miles") @db.Decimal(8, 2)
+  mileageRate       Decimal?         @map("mileage_rate") @db.Decimal(8, 2)
+  mileageFrom       String?          @map("mileage_from")
+  mileageTo         String?          @map("mileage_to")
+  projectId         String?          @map("project_id") @db.Uuid
+  resourceBookingId String?          @map("resource_booking_id") @db.Uuid
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+  deletedAt         DateTime?        @map("deleted_at")
+
+  claim             ExpenseClaim     @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  receiptDocument   Document?        @relation(fields: [receiptDocumentId], references: [id])
+  project           Project?         @relation(fields: [projectId], references: [id])
+  resourceBooking   ResourceBooking? @relation(fields: [resourceBookingId], references: [id])
+
+  @@index([claimId])
+  @@index([category])
+  @@index([receiptDocumentId])
+  @@index([projectId])
+  @@index([resourceBookingId])
+  @@index([expenseDate])
+  @@index([deletedAt])
+  @@map("expense_lines")
+}
+
+model Supplier {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String
+  accountId       String?  @map("account_id") @db.Uuid
+  contactName     String?  @map("contact_name")
+  email           String?
+  phone           String?
+  address         String?
+  accountManager  String?  @map("account_manager")
+  paymentTerms    String?  @map("payment_terms")
+  categoriesSupplied String? @map("categories_supplied")
+  defaultCurrency String   @default("GBP") @map("default_currency")
+  active          Boolean  @default(true)
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  account         Account? @relation(fields: [accountId], references: [id])
+  purchaseOrders  PurchaseOrder[]
+  products        Product[] @relation("ProductSupplier")
+
+  @@index([accountId])
+  @@index([name])
+  @@index([active])
+  @@index([deletedAt])
+  @@map("suppliers")
+}
+
+model PurchaseOrder {
+  id                   String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  poNumber             String              @unique @map("po_number")
+  supplierId           String              @map("supplier_id") @db.Uuid
+  supplierName         String?             @map("supplier_name")
+  supplierAddress      String?             @map("supplier_address")
+  supplierContactName  String?             @map("supplier_contact_name")
+  supplierContactEmail String?             @map("supplier_contact_email")
+  deliveryAddress      String?             @map("delivery_address")
+  projectId            String?             @map("project_id") @db.Uuid
+  quoteId              String?             @map("quote_id") @db.Uuid
+  changeRequestId      String?             @map("change_request_id") @db.Uuid
+  status               PurchaseOrderStatus @default(draft)
+  requestedById        String?             @map("requested_by_id") @db.Uuid
+  approvedById         String?             @map("approved_by_id") @db.Uuid
+  approvedAt           DateTime?           @map("approved_at")
+  orderDate            DateTime?           @map("order_date") @db.Date
+  expectedDeliveryDate DateTime?           @map("expected_delivery_date") @db.Date
+  receivedDate         DateTime?           @map("received_date") @db.Date
+  subtotal             Decimal             @default(0) @db.Decimal(12, 2)
+  vatAmount            Decimal             @default(0) @map("vat_amount") @db.Decimal(12, 2)
+  totalAmount          Decimal             @default(0) @map("total_amount") @db.Decimal(12, 2)
+  currency             String              @default("GBP")
+  notes                String?
+  createdAt            DateTime            @default(now()) @map("created_at")
+  updatedAt            DateTime            @updatedAt @map("updated_at")
+  deletedAt            DateTime?           @map("deleted_at")
+
+  supplier             Supplier            @relation(fields: [supplierId], references: [id])
+  project              Project?            @relation(fields: [projectId], references: [id])
+  quote                Quote?              @relation(fields: [quoteId], references: [id])
+  changeRequest        ProjectForm?        @relation("PurchaseOrderChangeRequest", fields: [changeRequestId], references: [id])
+  requestedBy          User?               @relation("PurchaseOrderRequestedBy", fields: [requestedById], references: [id])
+  approvedBy           User?               @relation("PurchaseOrderApprovedBy", fields: [approvedById], references: [id])
+  lines                PurchaseOrderLine[]
+  goodsReceipts        GoodsReceipt[]
+  supplierInvoices     SupplierInvoice[]
+
+  @@index([supplierId])
+  @@index([projectId])
+  @@index([quoteId])
+  @@index([changeRequestId])
+  @@index([status])
+  @@index([expectedDeliveryDate])
+  @@index([deletedAt])
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderLine {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  purchaseOrderId  String   @map("purchase_order_id") @db.Uuid
+  productId        String?  @map("product_id") @db.Uuid
+  sku              String?
+  manufacturer     String?
+  description      String
+  quantity         Decimal  @default(1) @db.Decimal(12, 2)
+  unitCost         Decimal  @default(0) @map("unit_cost") @db.Decimal(12, 2)
+  totalCost        Decimal  @default(0) @map("total_cost") @db.Decimal(12, 2)
+  taxRate          Decimal  @default(20) @map("tax_rate") @db.Decimal(5, 2)
+  taxAmount        Decimal  @default(0) @map("tax_amount") @db.Decimal(12, 2)
+  totalIncludingTax Decimal @default(0) @map("total_including_tax") @db.Decimal(12, 2)
+  receivedQuantity Decimal  @default(0) @map("received_quantity") @db.Decimal(12, 2)
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  purchaseOrder    PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  product          Product?      @relation(fields: [productId], references: [id])
+  assets           Asset[]
+
+  @@index([purchaseOrderId])
+  @@index([productId])
+  @@map("purchase_order_lines")
+}
+
+model GoodsReceipt {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  purchaseOrderId String   @map("purchase_order_id") @db.Uuid
+  receivedById    String?  @map("received_by_id") @db.Uuid
+  receivedAt      DateTime @default(now()) @map("received_at")
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  receivedBy      User?         @relation("GoodsReceiptReceivedBy", fields: [receivedById], references: [id])
+
+  @@index([purchaseOrderId])
+  @@index([receivedById])
+  @@map("goods_receipts")
+}
+
+model SupplierInvoice {
+  id              String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  purchaseOrderId String                @map("purchase_order_id") @db.Uuid
+  invoiceNumber   String                @map("invoice_number")
+  invoiceDate     DateTime              @map("invoice_date") @db.Date
+  dueDate         DateTime?             @map("due_date") @db.Date
+  amount          Decimal               @db.Decimal(12, 2)
+  status          SupplierInvoiceStatus @default(received)
+  documentId      String?               @map("document_id") @db.Uuid
+  createdAt       DateTime              @default(now()) @map("created_at")
+  updatedAt       DateTime              @updatedAt @map("updated_at")
+  deletedAt       DateTime?             @map("deleted_at")
+
+  purchaseOrder   PurchaseOrder         @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  document        Document?             @relation(fields: [documentId], references: [id])
+
+  @@index([purchaseOrderId])
+  @@index([status])
+  @@index([documentId])
+  @@index([deletedAt])
+  @@map("supplier_invoices")
+}
+
+model CustomerInvoice {
+  id                String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  invoiceNumber     String                @unique @map("invoice_number")
+  accountId         String                @map("account_id") @db.Uuid
+  projectId         String?               @map("project_id") @db.Uuid
+  quoteId           String?               @map("quote_id") @db.Uuid
+  status            CustomerInvoiceStatus @default(draft)
+  issueDate         DateTime?             @map("issue_date") @db.Date
+  dueDate           DateTime?             @map("due_date") @db.Date
+  amount            Decimal               @default(0) @db.Decimal(12, 2)
+  vatAmount         Decimal               @default(0) @map("vat_amount") @db.Decimal(12, 2)
+  totalAmount       Decimal               @default(0) @map("total_amount") @db.Decimal(12, 2)
+  paidAmount        Decimal               @default(0) @map("paid_amount") @db.Decimal(12, 2)
+  outstandingAmount Decimal               @default(0) @map("outstanding_amount") @db.Decimal(12, 2)
+  currency          String                @default("GBP")
+  notes             String?
+  createdById       String?               @map("created_by_id") @db.Uuid
+  createdAt         DateTime              @default(now()) @map("created_at")
+  updatedAt         DateTime              @updatedAt @map("updated_at")
+  deletedAt         DateTime?             @map("deleted_at")
+
+  account           Account               @relation(fields: [accountId], references: [id])
+  project           Project?              @relation(fields: [projectId], references: [id])
+  quote             Quote?                @relation(fields: [quoteId], references: [id])
+  createdBy         User?                 @relation("CustomerInvoiceCreatedBy", fields: [createdById], references: [id])
+  payments          CustomerPayment[]
+  billingSchedules  BillingSchedule[]
+
+  @@index([accountId])
+  @@index([projectId])
+  @@index([quoteId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([deletedAt])
+  @@map("customer_invoices")
+}
+
+model CustomerPayment {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  invoiceId   String   @map("invoice_id") @db.Uuid
+  paymentDate DateTime @map("payment_date") @db.Date
+  amount      Decimal  @db.Decimal(12, 2)
+  method      String?
+  reference   String?
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  invoice      CustomerInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@index([paymentDate])
+  @@map("customer_payments")
+}
+
+model BillingSchedule {
+  id              String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectId       String                @map("project_id") @db.Uuid
+  description     String
+  trigger         BillingScheduleTrigger
+  percentage      Decimal?              @db.Decimal(7, 2)
+  amount          Decimal               @default(0) @db.Decimal(12, 2)
+  dueDate         DateTime?             @map("due_date") @db.Date
+  status          BillingScheduleStatus @default(pending)
+  linkedInvoiceId String?               @map("linked_invoice_id") @db.Uuid
+  createdAt       DateTime              @default(now()) @map("created_at")
+  updatedAt       DateTime              @updatedAt @map("updated_at")
+
+  project         Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  linkedInvoice   CustomerInvoice?      @relation(fields: [linkedInvoiceId], references: [id])
+
+  @@index([projectId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([linkedInvoiceId])
+  @@map("billing_schedules")
+}
+
+model Asset {
+  id                  String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  assetNumber         String      @unique @map("asset_number")
+  projectId           String?     @map("project_id") @db.Uuid
+  accountId           String?     @map("account_id") @db.Uuid
+  purchaseOrderLineId String?     @map("purchase_order_line_id") @db.Uuid
+  productId           String?     @map("product_id") @db.Uuid
+  sku                 String?
+  manufacturer        String?
+  model               String?
+  serialNumber        String?     @map("serial_number")
+  macAddress          String?     @map("mac_address")
+  description         String
+  status              AssetStatus @default(required)
+  location            String?
+  warrantyStart       DateTime?   @map("warranty_start") @db.Date
+  warrantyEnd         DateTime?   @map("warranty_end") @db.Date
+  notes               String?
+  createdAt           DateTime    @default(now()) @map("created_at")
+  updatedAt           DateTime    @updatedAt @map("updated_at")
+  deletedAt           DateTime?   @map("deleted_at")
+
+  project             Project?           @relation(fields: [projectId], references: [id])
+  account             Account?           @relation(fields: [accountId], references: [id])
+  purchaseOrderLine   PurchaseOrderLine? @relation(fields: [purchaseOrderLineId], references: [id])
+  product             Product?           @relation(fields: [productId], references: [id])
+  helpdeskTickets     HelpdeskTicket[]
+
+  @@index([projectId])
+  @@index([accountId])
+  @@index([purchaseOrderLineId])
+  @@index([productId])
+  @@index([status])
+  @@index([serialNumber])
+  @@index([macAddress])
+  @@index([deletedAt])
+  @@map("assets")
+}
+
+model HelpdeskQueue {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @unique
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tickets     HelpdeskTicket[]
+
+  @@index([active])
+  @@map("helpdesk_queues")
+}
+
+model HelpdeskSlaPolicy {
+  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String
+  priority          HelpdeskPriority
+  responseMinutes   Int               @map("response_minutes")
+  resolutionMinutes Int               @map("resolution_minutes")
+  businessHoursOnly Boolean           @default(true) @map("business_hours_only")
+  active            Boolean           @default(true)
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  @@unique([name, priority])
+  @@index([priority])
+  @@index([active])
+  @@map("helpdesk_sla_policies")
+}
+
+model HelpdeskTicket {
+  id                 String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ticketNumber       String               @unique @map("ticket_number")
+  accountId          String?              @map("account_id") @db.Uuid
+  contactId          String?              @map("contact_id") @db.Uuid
+  projectId          String?              @map("project_id") @db.Uuid
+  assetId            String?              @map("asset_id") @db.Uuid
+  raisedByUserId     String?              @map("raised_by_user_id") @db.Uuid
+  raisedByName       String?              @map("raised_by_name")
+  raisedByEmail      String?              @map("raised_by_email")
+  title              String
+  description        String
+  ticketType         HelpdeskTicketType   @map("ticket_type")
+  category           HelpdeskTicketCategory
+  priority           HelpdeskPriority     @default(normal)
+  impact             HelpdeskImpact       @default(low)
+  urgency            HelpdeskUrgency      @default(low)
+  status             HelpdeskTicketStatus @default(new)
+  slaStatus          HelpdeskSlaStatus    @default(on_track) @map("sla_status")
+  assignedToId       String?              @map("assigned_to_id") @db.Uuid
+  queueId            String?              @map("queue_id") @db.Uuid
+  slaResponseDueAt   DateTime?            @map("sla_response_due_at")
+  slaResolutionDueAt DateTime?            @map("sla_resolution_due_at")
+  firstResponseAt    DateTime?            @map("first_response_at")
+  resolvedAt         DateTime?            @map("resolved_at")
+  closedAt           DateTime?            @map("closed_at")
+  source             HelpdeskTicketSource @default(manual)
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @updatedAt @map("updated_at")
+  deletedAt          DateTime?            @map("deleted_at")
+
+  account            Account?             @relation(fields: [accountId], references: [id])
+  contact            Contact?             @relation(fields: [contactId], references: [id])
+  project            Project?             @relation(fields: [projectId], references: [id])
+  asset              Asset?               @relation(fields: [assetId], references: [id])
+  raisedByUser       User?                @relation("HelpdeskTicketRaisedByUser", fields: [raisedByUserId], references: [id])
+  assignedTo         User?                @relation("HelpdeskTicketAssignedTo", fields: [assignedToId], references: [id])
+  queue              HelpdeskQueue?       @relation(fields: [queueId], references: [id])
+  comments           HelpdeskTicketComment[]
+  resourceBookings   ResourceBooking[]
+
+  @@index([accountId])
+  @@index([contactId])
+  @@index([projectId])
+  @@index([assetId])
+  @@index([raisedByUserId])
+  @@index([assignedToId])
+  @@index([queueId])
+  @@index([priority])
+  @@index([status])
+  @@index([slaStatus])
+  @@index([slaResponseDueAt])
+  @@index([slaResolutionDueAt])
+  @@index([deletedAt])
+  @@map("helpdesk_tickets")
+}
+
+model HelpdeskTicketComment {
+  id         String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ticketId   String                    @map("ticket_id") @db.Uuid
+  authorId   String?                   @map("author_id") @db.Uuid
+  visibility HelpdeskCommentVisibility @default(internal)
+  body       String
+  createdAt  DateTime                  @default(now()) @map("created_at")
+  updatedAt  DateTime                  @updatedAt @map("updated_at")
+  deletedAt  DateTime?                 @map("deleted_at")
+
+  ticket     HelpdeskTicket            @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author     User?                     @relation("HelpdeskTicketCommentAuthor", fields: [authorId], references: [id])
+
+  @@index([ticketId])
+  @@index([authorId])
+  @@index([visibility])
+  @@index([deletedAt])
+  @@map("helpdesk_ticket_comments")
+}
+
+model KnowledgeArticle {
+  id          String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title       String
+  category    String?
+  body        String
+  status      KnowledgeArticleStatus @default(draft)
+  createdById String?                @map("created_by_id") @db.Uuid
+  updatedById String?                @map("updated_by_id") @db.Uuid
+  createdAt   DateTime               @default(now()) @map("created_at")
+  updatedAt   DateTime               @updatedAt @map("updated_at")
+
+  createdBy   User?                  @relation("KnowledgeArticleCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User?                  @relation("KnowledgeArticleUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([status])
+  @@index([category])
+  @@map("knowledge_articles")
+}
