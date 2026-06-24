@@ -12,15 +12,21 @@ import {
 const activeSalesUsers = ["sales-1", "sales-2"];
 
 describe("CRM sales ownership", () => {
-  it("returns active Sales users only for salesperson dropdowns", () => {
+  it("returns active Sales, Administrator and Business Operations users for salesperson dropdowns", () => {
     const users = filterActiveSalesUsers([
       { id: "sales-1", displayName: "Sam Sales", email: "sam@example.com", isActive: true, role: { name: "Sales" } },
+      { id: "admin-1", displayName: "James Harrison", email: "james@connectedhsp.com", isActive: true, role: { name: "Administrator" } },
+      { id: "ops-1", displayName: "Ops User", email: "ops@example.com", isActive: true, role: { name: "Business Operations" } },
       { id: "inactive-sales", displayName: "Inactive Sales", email: "inactive@example.com", isActive: false, role: { name: "Sales" } },
       { id: "deleted-sales", displayName: "Deleted Sales", email: "deleted@example.com", isActive: true, deletedAt: new Date(), role: { name: "Sales" } },
-      { id: "ops-1", displayName: "Ops User", email: "ops@example.com", isActive: true, role: { name: "Business Operations" } }
+      { id: "field-1", displayName: "Field User", email: "field@example.com", isActive: true, role: { name: "Field Engineer" } }
     ]);
 
-    expect(users).toEqual([{ id: "sales-1", displayName: "Sam Sales", email: "sam@example.com" }]);
+    expect(users).toEqual([
+      { id: "sales-1", displayName: "Sam Sales", email: "sam@example.com" },
+      { id: "admin-1", displayName: "James Harrison", email: "james@connectedhsp.com" },
+      { id: "ops-1", displayName: "Ops User", email: "ops@example.com" }
+    ]);
   });
 
   it("defaults Sales user created leads and opportunities to themselves", () => {
@@ -37,13 +43,20 @@ describe("CRM sales ownership", () => {
     ).toThrow("salesperson assignment");
   });
 
-  it("allows Administrator and Business Operations users to assign active Sales users", () => {
+  it("allows Administrator and Business Operations users to assign active selectable salespeople", () => {
     expect(resolveSalesRecordOwnerId({ context: adminContext(), requestedOwnerId: "sales-2", activeSalespersonIds: activeSalesUsers })).toBe("sales-2");
     expect(resolveSalesRecordOwnerId({ context: businessOpsContext(), requestedOwnerId: "sales-1", activeSalespersonIds: activeSalesUsers })).toBe("sales-1");
   });
 
-  it("rejects assignment to inactive or non-Sales users", () => {
-    expect(() => resolveSalesRecordOwnerId({ context: adminContext(), requestedOwnerId: "ops-1", activeSalespersonIds: activeSalesUsers })).toThrow("active Sales user");
+  it("allows Administrator and Business Operations users to assign administrators and business operations users", () => {
+    const activeSelectableUsers = [...activeSalesUsers, "admin-1", "ops-1"];
+
+    expect(resolveSalesRecordOwnerId({ context: adminContext(), requestedOwnerId: "admin-1", activeSalespersonIds: activeSelectableUsers })).toBe("admin-1");
+    expect(resolveSalesRecordOwnerId({ context: businessOpsContext(), requestedOwnerId: "ops-1", activeSalespersonIds: activeSelectableUsers })).toBe("ops-1");
+  });
+
+  it("rejects assignment to inactive or non-selectable users", () => {
+    expect(() => resolveSalesRecordOwnerId({ context: adminContext(), requestedOwnerId: "field-1", activeSalespersonIds: activeSalesUsers })).toThrow("active salesperson");
   });
 
   it("allows only Administrator and Business Operations users to select salespeople", () => {

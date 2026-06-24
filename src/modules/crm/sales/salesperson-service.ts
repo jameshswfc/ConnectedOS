@@ -4,6 +4,7 @@ import type { CrmAccessContext } from "@/modules/crm/types/crm-context";
 
 export const salesRoleName = "Sales";
 export const salespersonSelectorRoles = ["Administrator", "Business Operations"] as const;
+export const salespersonAssignableRoleNames = [salesRoleName, "Administrator", "Business Operations"] as const;
 
 export type SalespersonOption = {
   id: string;
@@ -22,7 +23,13 @@ type SalesUserLike = {
 };
 
 export function isActiveSalesUser(user: SalesUserLike) {
-  return Boolean(user.isActive && !user.deletedAt && !user.deactivatedAt && user.role?.name === salesRoleName);
+  return Boolean(
+    user.isActive
+    && !user.deletedAt
+    && !user.deactivatedAt
+    && user.role?.name
+    && salespersonAssignableRoleNames.includes(user.role.name as (typeof salespersonAssignableRoleNames)[number])
+  );
 }
 
 export function toSalespersonOption(user: Pick<SalesUserLike, "id" | "displayName" | "email">): SalespersonOption {
@@ -43,7 +50,7 @@ export async function getActiveSalesUsers(): Promise<SalespersonOption[]> {
       isActive: true,
       deletedAt: null,
       deactivatedAt: null,
-      role: { name: salesRoleName }
+      role: { name: { in: [...salespersonAssignableRoleNames] } }
     },
     select: {
       id: true,
@@ -104,10 +111,10 @@ export function resolveSalesRecordOwnerId({
 }) {
   if (canSelectSalesperson(context)) {
     if (!requestedOwnerId) {
-      throw new Error("Missing permission: active Sales owner required");
+      throw new Error("Missing permission: active salesperson owner required");
     }
     if (!activeSalespersonIds.includes(requestedOwnerId)) {
-      throw new Error("Missing permission: owner must be an active Sales user");
+      throw new Error("Missing permission: owner must be an active salesperson");
     }
     return requestedOwnerId;
   }
