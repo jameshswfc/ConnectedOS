@@ -8,6 +8,8 @@ export type QuoteOpportunityOption = {
   opportunityName: string;
   accountId: string;
   accountName: string;
+  primaryContactId?: string | null;
+  notes?: string | null;
 };
 
 export type QuoteContactOption = {

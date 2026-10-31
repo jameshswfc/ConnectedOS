@@ -3,10 +3,13 @@ import { LoginActions } from "@/app/login/login-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
 import { brandAssets, brandCopy } from "@/lib/brand";
+import { isMicrosoftLoginEnabled } from "@/services/auth/microsoft-login-service";
 
 export const dynamic = "force-dynamic";
 
-export default async function LoginPage() {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+  const { error } = await searchParams;
+  const microsoftEnabled = isMicrosoftLoginEnabled();
   const adminEmail = process.env.INITIAL_ADMIN_EMAIL?.trim().toLowerCase();
   const initialAdmin = adminEmail ? await prisma.user.findUnique({ where: { email: adminEmail }, select: { passwordHash: true } }) : null;
   const showDevelopmentLogin = process.env.NODE_ENV === "development" && !initialAdmin?.passwordHash;
@@ -41,9 +44,9 @@ export default async function LoginPage() {
         </CardHeader>
         <CardContent className="space-y-5">
           <p className="text-sm leading-6 text-slate-600">
-            Sign in with your ConnectedOS email address and local password.
+            {microsoftEnabled ? "Sign in with your Connected Hospitality Microsoft 365 account." : "Sign in with your ConnectedOS email address and local password."}
           </p>
-          <LoginActions showDevelopmentLogin={showDevelopmentLogin} />
+          <LoginActions showDevelopmentLogin={showDevelopmentLogin} microsoftEnabled={microsoftEnabled} loginError={error} />
         </CardContent>
       </Card>
     </main>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_QUOTE_TERMS } from "@/modules/quoting/quotes/quote-terms";
-import { quoteCreateSchema, quoteLineCreateSchema, quoteVersionTermsUpdateSchema } from "@/modules/quoting/schemas/quoting-schemas";
+import { quoteCreateSchema, quoteLineCreateSchema, quoteUpdateSchema, quoteVersionTermsUpdateSchema } from "@/modules/quoting/schemas/quoting-schemas";
 
 describe("quote schemas", () => {
   const validQuote = {
@@ -12,6 +12,12 @@ describe("quote schemas", () => {
 
   it("requires an opportunity", () => {
     expect(() => quoteCreateSchema.parse({ ...validQuote, opportunityId: undefined })).toThrow();
+  });
+
+  it("cannot bypass approval by creating or patching a quote status", () => {
+    expect(quoteCreateSchema.safeParse({ ...validQuote, status: "accepted" }).success).toBe(false);
+    expect(quoteUpdateSchema.safeParse({ status: "approved" }).success).toBe(false);
+    expect(quoteCreateSchema.parse(validQuote).status).toBe("draft");
   });
 
   it("requires a contact", () => {

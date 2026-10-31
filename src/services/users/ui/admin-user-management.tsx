@@ -16,13 +16,30 @@ type UserRow = {
   isActive: boolean;
   mustChangePassword: boolean;
   lastLoginAt: Date | string | null;
+  microsoftId?: string | null;
 };
 
 type RoleOption = { id: string; name: string };
 
-export function AdminUserManagement({ users, roles }: { users: UserRow[]; roles: RoleOption[] }) {
+export function AdminUserManagement({ users, roles, microsoftEnabled = false }: { users: UserRow[]; roles: RoleOption[]; microsoftEnabled?: boolean }) {
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
+  const [linking, setLinking] = useState<string | null>(null);
+
+  async function linkMicrosoft(userId: string, formData: FormData) {
+    if (linking) return;
+    setLinking(userId);
+    setMessage(null);
+    try {
+      const response = await fetch(`/api/v1/users/${userId}/microsoft`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ objectId: formData.get("objectId") })
+      });
+      setMessage(response.ok ? "Microsoft identity linked. Existing roles and records are unchanged." : await friendlyActionError(response, "Unable to link Microsoft account."));
+      if (response.ok) router.refresh();
+    } catch { setMessage("Unable to link Microsoft account. Please try again."); }
+    finally { setLinking(null); }
+  }
 
   async function createUser(formData: FormData) {
     setMessage(null);
@@ -85,6 +102,8 @@ export function AdminUserManagement({ users, roles }: { users: UserRow[]; roles:
   return (
     <div className="space-y-6">
       {message ? <p className="rounded-md border border-brand-100 bg-white px-3 py-2 text-sm text-brand-900">{message}</p> : null}
+      <details open={!microsoftEnabled}>
+      <summary className="mb-3 cursor-pointer text-sm font-medium text-brand-700">Create a local account</summary>
       <form action={createUser} className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-2 xl:grid-cols-4">
         <input name="name" required placeholder="Name" className="h-10 rounded-md border border-slate-300 px-3 text-sm" />
         <input name="email" type="email" required placeholder="Email" className="h-10 rounded-md border border-slate-300 px-3 text-sm" />
@@ -95,9 +114,17 @@ export function AdminUserManagement({ users, roles }: { users: UserRow[]; roles:
         <label className="flex items-center gap-2 text-sm text-slate-700"><input name="isActive" type="checkbox" defaultChecked /> Active</label>
         <Button type="submit">Add User</Button>
       </form>
+      </details>
       <div className="space-y-3">
         {users.map((user) => (
           <div key={user.id} className="rounded-lg border border-slate-200 bg-white p-4">
+            <details className="mb-3 border-b border-slate-100 pb-3">
+              <summary className="cursor-pointer text-sm font-medium text-brand-700">Microsoft 365: {user.microsoftId ? "Linked" : "Not linked"}</summary>
+              {user.microsoftId ? <p className="mt-2 break-all text-xs text-slate-600">Identity: {user.microsoftId}</p> : <form action={(data) => linkMicrosoft(user.id, data)} className="mt-3 flex flex-wrap items-end gap-3">
+                <label className="text-sm text-slate-700">Microsoft Entra user Object ID<input name="objectId" required aria-label={`Microsoft Object ID for ${user.displayName}`} className="mt-1 block h-10 w-80 max-w-full rounded-md border border-slate-300 px-3 text-sm" /></label>
+                <Button type="submit" variant="secondary" disabled={linking !== null}>{linking === user.id ? "Linking..." : "Link Microsoft Account"}</Button>
+              </form>}
+            </details>
             <form action={(formData) => updateUser(user.id, formData)} className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
               <input name="name" required defaultValue={user.displayName} className="h-10 rounded-md border border-slate-300 px-3 text-sm" />
               <input name="email" type="email" required defaultValue={user.email} className="h-10 rounded-md border border-slate-300 px-3 text-sm" />

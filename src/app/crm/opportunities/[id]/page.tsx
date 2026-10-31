@@ -7,6 +7,7 @@ import { getOpportunity } from "@/modules/crm/opportunities/opportunity-service"
 import { getStageLabel } from "@/modules/crm/opportunities/opportunity-stages";
 import { getOpportunityTypeLabel } from "@/modules/crm/opportunities/opportunity-types";
 import { OpportunityHealthBadge } from "@/modules/crm/ui/opportunity-health-badge";
+import { SalesJourney } from "@/modules/crm/ui/sales-journey";
 import { formatDate, formatMoney, labelFromValue } from "@/modules/crm/ui/crm-format";
 import { getCrmPageContext } from "@/modules/crm/ui/crm-page-context";
 import { QuoteStatusBadge } from "@/modules/quoting/ui/quote-status-badge";
@@ -18,13 +19,24 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
   const { context, userName } = await getCrmPageContext();
   const { id } = await params;
   const opportunity = await getOpportunity(context, id);
+  const admin = context.permissionLevel === "administrator" || context.permissions.includes("admin.users");
+  const can = (permission: string) => admin || context.permissions.includes(permission);
+  const canEdit = can("crm.opportunity.update") && (admin || opportunity.ownerId === context.userId);
+  const openPresales = opportunity.presalesRequests.find((request) => !["complete", "cancelled"].includes(request.status));
   return (
     <AppShell title={opportunity.opportunityName} userName={userName}>
       <div className="mb-4 flex justify-end gap-2">
-        <Link href={`/presales/new?opportunityId=${opportunity.id}`}><Button>Pre-Sales Request</Button></Link>
-        <Link href={`/quotes/new?opportunityId=${opportunity.id}`}><Button>Create Quote</Button></Link>
-        <Link href={`/crm/opportunities/${opportunity.id}/edit`}><Button variant="secondary">Edit Opportunity</Button></Link>
+        {canEdit ? <Link href={`/crm/opportunities/${opportunity.id}/edit`}><Button variant="secondary">Edit Opportunity</Button></Link> : null}
       </div>
+      <SalesJourney steps={[
+        { title: "Lead / Opportunity", emptyLabel: "Opportunity created directly", records: [
+          ...opportunity.linkedLeads.map((lead) => ({ id: lead.id, label: lead.accountName ?? "Original lead", status: lead.status, href: `/crm/leads/${lead.id}` })),
+          { id: opportunity.id, label: opportunity.opportunityName, status: getStageLabel(opportunity.stage), href: `/crm/opportunities/${opportunity.id}` }
+        ] },
+        { title: "Pre-Sales", emptyLabel: "No accessible pre-sales request", records: opportunity.presalesRequests.map((request) => ({ id: request.id, label: `${request.requestNumber}${request.assignedTo ? ` - ${request.assignedTo.displayName}` : ""}`, status: request.status, href: `/presales/${request.id}` })), action: openPresales ? { label: "Open Pre-Sales", href: `/presales/${openPresales.id}` } : can("presales.create") && opportunity.status === "open" ? { label: "Request Pre-Sales", href: `/presales/new?opportunityId=${opportunity.id}` } : undefined },
+        { title: "Proposal / Quote", emptyLabel: "No accessible quote", records: opportunity.quotes.map((quote) => ({ id: quote.id, label: `${quote.quoteNumber} - v${quote.currentVersionNumber}`, status: quote.status, href: `/quotes/${quote.id}` })), action: can("quotes.create") && opportunity.status === "open" ? { label: "Create Quote", href: `/quotes/new?opportunityId=${opportunity.id}` } : undefined },
+        { title: "Project", emptyLabel: "No accessible project", records: opportunity.projects.map((project) => ({ id: project.id, label: `${project.projectNumber} - ${project.name}`, status: project.status, href: `/projects/${project.id}` })) }
+      ]} />
       <div className="grid gap-4 lg:grid-cols-3">
         <Card><CardHeader><CardTitle>Summary</CardTitle></CardHeader><CardContent className="space-y-2 text-sm"><p>Account: <Link href={`/crm/accounts/${opportunity.account.id}`} className="font-medium text-brand-700">{opportunity.account.name}</Link></p><p>Primary contact: {opportunity.primaryContact ? <Link href={`/crm/contacts/${opportunity.primaryContact.id}`} className="font-medium text-brand-700">{opportunity.primaryContact.firstName} {opportunity.primaryContact.lastName}</Link> : "-"}</p><p>Type: {getOpportunityTypeLabel(opportunity.opportunityType)}</p><p>Source: {labelFromValue(opportunity.source)}</p><p>Stage: {getStageLabel(opportunity.stage)}</p><p>Status: {labelFromValue(opportunity.status)}</p><p>Health: <OpportunityHealthBadge status={opportunity.healthStatus} /></p><p>Owner: {opportunity.owner.displayName}</p><p>Close date: {formatDate(opportunity.expectedCloseDate)}</p></CardContent></Card>
         <Card><CardHeader><CardTitle>Commercials</CardTitle></CardHeader><CardContent className="space-y-2 text-sm"><p>Value: {formatMoney(opportunity.value)}</p><p>Weighted: {formatMoney(opportunity.weightedValue)}</p><p>Probability: {opportunity.probabilityPercent}%</p><p>Margin: {opportunity.marginPercent ? `${opportunity.marginPercent}%` : "-"}</p></CardContent></Card>

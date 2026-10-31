@@ -35,7 +35,8 @@ describe("user service permission levels", () => {
       "Project Manager",
       "Field Engineer",
       "Finance",
-      "Business Operations"
+      "Business Operations",
+      "Staff"
     ]);
     expect([...businessRoleNames]).not.toContain("System Administrator");
     expect([...businessRoleNames]).not.toContain("Sales User");

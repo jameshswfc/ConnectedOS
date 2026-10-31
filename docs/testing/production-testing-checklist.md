@@ -1,6 +1,37 @@
 # Production Testing Checklist
 
+## Restart Release: Microsoft Login and Sales Journey
+
+- Run `npm run test:journey` against a local database. Confirm the isolated end-to-end check passes and leaves the normal dataset untouched.
+- Sign in using the existing local administrator; confirm this fallback remains available.
+- Configure Microsoft credentials privately. Verify the registered callback is the live portal's `/api/auth/callback/azure-ad`.
+- Link the existing administrator using their Entra **user Object ID**, never the application Object ID; confirm ownership and roles are unchanged.
+- Sign in with Microsoft as a linked member and as a new tenant member. The new member must receive Staff with no operational access until assigned a role.
+- Verify guests, wrong-tenant identities and deactivated users cannot sign in. An email collision must require explicit linking, not automatic account takeover.
+- Open an owned lead, convert it to an opportunity with an account and contact, then retry conversion. Only one opportunity should exist.
+- Follow Sales to Project links: pre-sales, reviewed quote, Sent, Accepted, project. Check account, contact, owner, scope, pre-sales reference and labour budget carry through.
+- Try direct quote approval through create/edit/status payloads: it must fail unless the dedicated approval workflow and permission checks are used.
+- Verify the journey and grouped navigation on desktop/mobile. Links must not reveal records beyond the viewer's permissions.
+- Confirm signed-out API requests return JSON 401, and unauthorised authenticated requests JSON 403, without HTML redirects.
+
+
 Use this checklist for ConnectedOS browser QA from a seeded local environment.
+
+## Restart and Identity Checks
+
+Use a disposable local/staging database for seed and cleanup commands below. Never run them against live business data as a release step.
+
+1. Signed out: request `/api/v1/users`, `/api/v1/helpdesk/tickets`, `/api/v1/resource-bookings` and `/api/v1/notifications`. Expect JSON 401 with a sign-in message, never HTML redirects or generic 500s. Visiting `/dashboard` should still redirect to login.
+2. Sign in with the active local administrator. Do not reset or reactivate an old configured seed admin. Verify grouped desktop navigation and the mobile Menu, including keyboard focus, opening/closing and links.
+3. Verify existing role permissions and sales owner selectors still include eligible Sales, Administrator and Business Operations users. Grouping must not broaden access.
+4. Configure Microsoft sign-in using `docs/integrations/microsoft-365-sign-in.md`. Test single-tenant member claims, a wrong tenant, a guest and a deactivated local account. Denied sign-ins must not create users.
+5. A new tenant member gets Staff: Settings, own notifications and restricted dashboard only. Direct operational pages/API/search must not reveal restricted data.
+6. A matching local email must require explicit admin identity linking, not merge automatically. Confirm existing user ID, role and ownership survive linking. Reject an identity already linked elsewhere.
+7. Assign a business role to Staff, refresh the session and check allowed navigation and denied APIs. Then deactivate the account and verify its existing session loses access.
+8. Local first-login password change remains mandatory. A Microsoft-only account should not ask for an unknown local password; Settings explains Microsoft-managed credentials.
+9. Verify local fallback and same-port sign-out. Retain emergency access before enabling Microsoft sign-in on the VPS.
+
+Local restart browser smoke evidence: active administrator login succeeded; Helpdesk Tickets, Field Services Schedule, New Booking, Projects, Settings and Users returned 200 without page errors; mobile navigation was visible; four unauthenticated APIs returned JSON 401. This is page/navigation smoke coverage, not a full resolve-close-booking or lead-to-project mutation test. No business records were changed by these checks.
 
 ## Setup
 

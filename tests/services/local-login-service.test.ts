@@ -4,7 +4,7 @@ import { hashPassword } from "@/services/auth/password-service";
 
 const activeDate = new Date("2026-06-09T10:00:00.000Z");
 
-async function buildUser(overrides: Partial<Parameters<typeof evaluateLocalLogin>[1] extends (email: string) => Promise<infer T> ? NonNullable<T> : never> = {}) {
+async function buildUser(overrides: Partial<Awaited<ReturnType<Parameters<typeof evaluateLocalLogin>[1]>>[number]> = {}) {
   return {
     id: "user-1",
     displayName: "James Harrison",

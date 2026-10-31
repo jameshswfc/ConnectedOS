@@ -15,7 +15,7 @@ export default async function SettingsPage() {
           <CardTitle>Account Settings</CardTitle>
         </CardHeader>
         <CardContent>
-          <AccountSettingsForms user={{ displayName: profile.displayName, email: profile.email, role: profile.role, permissionLevel: profile.permissionLevel }} />
+          <AccountSettingsForms user={{ displayName: profile.displayName, email: profile.email, role: profile.role, permissionLevel: profile.permissionLevel, hasLocalPassword: profile.hasLocalPassword }} />
         </CardContent>
       </Card>
     </AppShell>

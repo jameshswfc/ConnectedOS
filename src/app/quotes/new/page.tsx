@@ -27,7 +27,9 @@ export default async function NewQuotePage({ searchParams }: PageProps) {
           id: opportunity.id,
           opportunityName: opportunity.opportunityName,
           accountId: opportunity.accountId,
-          accountName: opportunity.account.name
+          accountName: opportunity.account.name,
+          primaryContactId: opportunity.primaryContactId,
+          notes: opportunity.notes
         }))}
         contacts={contacts.map((contact) => ({
           id: contact.id,

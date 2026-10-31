@@ -34,7 +34,7 @@ export const quoteCreateSchema = z.object({
   projectName: optionalString,
   highLevelScope: z.string().trim().min(1, "High Level Scope is required"),
   preparedDate: z.coerce.date().optional().nullable(),
-  status: quoteStatusSchema.default("draft"),
+  status: z.literal("draft").default("draft"),
   notes: optionalString
 });
 
@@ -45,7 +45,7 @@ export const quoteUpdateSchema = z.object({
   projectName: optionalString,
   highLevelScope: z.string().trim().min(1).optional(),
   preparedDate: z.coerce.date().optional().nullable(),
-  status: quoteStatusSchema.optional(),
+  status: z.never().optional(),
   notes: optionalString
 });
 

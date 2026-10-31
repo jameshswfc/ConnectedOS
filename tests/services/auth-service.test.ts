@@ -24,6 +24,30 @@ describe("auth service password-change gate", () => {
     vi.clearAllMocks();
   });
 
+  it("keeps page redirects but returns a typed authentication error for APIs", async () => {
+    mocks.getServerSession.mockResolvedValue(null);
+    const { requireAuthenticatedUser, requireAuthenticatedApiUser } = await import("@/services/auth/auth-service");
+    await expect(requireAuthenticatedUser()).rejects.toThrow("REDIRECT:/login");
+    mocks.redirect.mockClear();
+    await expect(requireAuthenticatedApiUser()).rejects.toMatchObject({ code: "UNAUTHENTICATED", status: 401 });
+    expect(mocks.redirect).not.toHaveBeenCalled();
+  });
+
+  it("blocks API access until the password is changed but permits the password-change endpoint", async () => {
+    mocks.getServerSession.mockResolvedValue({ user: { id: "user-1", mustChangePassword: true, permissions: [] } });
+    const { requireAuthenticatedApiUser } = await import("@/services/auth/auth-service");
+    await expect(requireAuthenticatedApiUser()).rejects.toMatchObject({ code: "PASSWORD_CHANGE_REQUIRED", status: 403 });
+    await expect(requireAuthenticatedApiUser({ allowPasswordChangeRequired: true })).resolves.toMatchObject({ id: "user-1" });
+    expect(mocks.redirect).not.toHaveBeenCalled();
+  });
+
+  it("preserves authenticated role and permission context", async () => {
+    const user = { id: "user-1", role: "Sales", permissionLevel: "user", permissions: ["crm.account.read_own"] };
+    mocks.getServerSession.mockResolvedValue({ user });
+    const { requireAuthenticatedApiUser } = await import("@/services/auth/auth-service");
+    await expect(requireAuthenticatedApiUser()).resolves.toEqual(user);
+  });
+
   it("redirects a must-change-password user away from protected pages", async () => {
     mocks.getServerSession.mockResolvedValue({
       user: {

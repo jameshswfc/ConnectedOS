@@ -247,7 +247,7 @@ export function shouldAutoCreatePresalesForCreatedStage(stage: OpportunityStage)
 }
 
 export function buildPresalesOpportunityStageSync(stage: OpportunityStage, value: number) {
-  if (stage === OpportunityStage.pre_sales_solution_design) return null;
+  if ([OpportunityStage.pre_sales_solution_design, OpportunityStage.closed_won_po_received, OpportunityStage.lost].includes(stage as "pre_sales_solution_design" | "closed_won_po_received" | "lost")) return null;
   return {
     fromStage: stage,
     toStage: OpportunityStage.pre_sales_solution_design,

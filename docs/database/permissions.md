@@ -230,17 +230,23 @@ Helpdesk action visibility:
 
 Sales ownership rules:
 
-- A salesperson is an active user assigned the `Sales` role.
+- A salesperson selector includes active Sales, Administrator and Business Operations users according to the current sales-owner helper. Selection does not grant editing or user-admin permissions.
 - Seeded Sales users have own-record permissions for leads, opportunities and activities.
 - Sales users can create leads, opportunities and activities assigned to themselves.
 - Sales users cannot assign sales-owned records to another salesperson.
-- Administrator and Business Operations users can assign active Sales users and can filter CRM dashboard, pipeline, forecast and My Work by salesperson.
+- Administrator and Business Operations users can assign eligible active sales owners and can filter CRM dashboard, pipeline, forecast and My Work by salesperson.
 - Business Operations keeps wide operational visibility but does not receive user administration permissions.
 - Quotes inherit owner from the linked opportunity when created.
 - Sales users are scoped to their own quotes server-side.
-- Administrator and Business Operations users can filter quotes by active Sales user.
+- Administrator and Business Operations users can filter quotes by eligible active sales owner.
 - CRM My Work includes the selected salesperson's quotes and linked pre-sales requests where permitted.
 - Notifications are visible through the top-right bell and `/notifications`; notification actions remain user-scoped.
+
+## Microsoft 365 Onboarding and Navigation
+
+New tenant members receive the `Staff` role and `user` permission level, with no operational permissions. Staff can access their profile, own notifications and restricted welcome dashboard. Administrators assign the existing approved business roles in Users. This retains the single-role model and adds no automatic domain-based or email-based elevation. Existing local accounts require explicit administrator identity linking; the API requires `admin.users` and audits the link.
+
+The sidebar groups only links already permitted by the existing navigation rules: My Work, Sales, Pre-Sales, Projects, Scheduling, Business Tools and Administration. Empty groups are hidden; active groups expand. Grouping does not broaden server-side access. Inactive/deleted users lose permissions on session refresh and permission-service checks.
 
 Page-level access denial should render the shared friendly AccessDenied experience or `/403`. API-level denial remains JSON `401` or `403`.
 

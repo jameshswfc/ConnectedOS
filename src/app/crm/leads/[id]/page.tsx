@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { canConvertLead } from "@/modules/crm/leads/lead-conversion-service";
 import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getLead } from "@/modules/crm/leads/lead-service";
@@ -15,6 +16,9 @@ export default async function LeadDetailPage({ params }: PageProps) {
 
   return (
     <AppShell title={title} userName={userName}>
+      <div className="mb-5 flex flex-wrap gap-3">
+        {lead.convertedOpportunityId ? <Link className="rounded-md bg-brand-700 px-4 py-2 text-sm font-medium text-white" href={`/crm/opportunities/${lead.convertedOpportunityId}`}>Open Opportunity</Link> : lead.status !== "disqualified" && canConvertLead(context, lead.ownerId) ? <Link className="rounded-md bg-brand-700 px-4 py-2 text-sm font-medium text-white" href={`/crm/leads/${lead.id}/convert`}>Qualify and Convert to Opportunity</Link> : null}
+      </div>
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader><CardTitle>Lead Detail</CardTitle></CardHeader>

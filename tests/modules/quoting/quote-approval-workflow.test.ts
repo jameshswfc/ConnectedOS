@@ -1,4 +1,4 @@
-import { QuoteApprovalRuleType, QuoteStatus } from "@prisma/client";
+import { Prisma, QuoteApprovalRuleType, QuoteStatus } from "@prisma/client";
 import { describe, expect, it } from "vitest";
 import { OpportunityStage } from "@prisma/client";
 import { canApproveQuoteRequest, evaluateQuoteApprovalTriggers, getLinkedOpportunityStatusSync } from "@/modules/quoting/quotes/quote-approval-service";
@@ -6,7 +6,7 @@ import { assertValidQuoteStatusTransition } from "@/modules/quoting/quotes/quote
 
 const activeRule = (ruleType: QuoteApprovalRuleType, thresholdValue: number | null) => ({
   ruleType,
-  thresholdValue,
+  thresholdValue: thresholdValue === null ? null : new Prisma.Decimal(thresholdValue),
   isActive: true
 });
 
@@ -52,8 +52,8 @@ describe("quote approval workflow", () => {
     expect(() => assertValidQuoteStatusTransition(QuoteStatus.internal_review, QuoteStatus.approved)).not.toThrow();
     expect(() => assertValidQuoteStatusTransition(QuoteStatus.approved, QuoteStatus.sent)).not.toThrow();
     expect(() => assertValidQuoteStatusTransition(QuoteStatus.sent, QuoteStatus.accepted)).not.toThrow();
-    expect(() => assertValidQuoteStatusTransition(QuoteStatus.draft, QuoteStatus.approved)).toThrow("Invalid quote status transition");
-    expect(() => assertValidQuoteStatusTransition(QuoteStatus.draft, QuoteStatus.accepted)).toThrow("Invalid quote status transition");
+    expect(() => assertValidQuoteStatusTransition(QuoteStatus.draft, QuoteStatus.approved)).toThrow("complete the approval steps first");
+    expect(() => assertValidQuoteStatusTransition(QuoteStatus.draft, QuoteStatus.accepted)).toThrow("complete the approval steps first");
   });
 
   it("prevents users approving their own quote without override permission", () => {

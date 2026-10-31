@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { ZodError, type z } from "zod";
 import { errorResponse } from "@/lib/api-response";
-import { requireAuthenticatedUser } from "@/services/auth/auth-service";
+import { requireAuthenticatedApiUser } from "@/services/auth/auth-service";
+import { apiAuthErrorResponse } from "@/services/auth/api-auth-error";
 import { assertUserPermission } from "@/services/permissions/permission-service";
 
 export async function requireUserAdmin() {
-  const user = await requireAuthenticatedUser();
+  const user = await requireAuthenticatedApiUser();
   await assertUserPermission(user.id, "admin.users");
   return user;
 }
@@ -15,6 +16,8 @@ export async function parseJsonBody<TSchema extends z.ZodTypeAny>(request: Reque
 }
 
 export function handleUserApiError(error: unknown) {
+  const authResponse = apiAuthErrorResponse(error);
+  if (authResponse) return authResponse;
   if (error instanceof ZodError) {
     return NextResponse.json(errorResponse("VALIDATION_ERROR", "Request validation failed."), { status: 400 });
   }

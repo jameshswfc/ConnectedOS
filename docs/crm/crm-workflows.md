@@ -9,6 +9,18 @@
 5. Original lead is marked converted.
 6. Audit log records conversion.
 
+### Restart Release: Connected Sales Journey
+
+The lead detail page now provides **Qualify and Convert to Opportunity**. The form reuses an accessible account/contact or creates them with the necessary permissions. Conversion inherits the lead owner and estimated value, creates a Qualified opportunity with stage history, preserves linked activities and marks the lead converted. A transaction and row lock make repeat submissions return the same opportunity. Disqualified leads cannot be converted.
+
+The opportunity detail page shows a permission-scoped **Sales to Project** journey with links to the original lead, pre-sales requests, quote versions/statuses and projects. Each link uses the existing record access rules; the journey does not grant access to another module. Quote creation preselects the opportunity contact and scope where available.
+
+An eligible unlinked pre-sales request is attached when its opportunity's quote is created. Project creation also checks for opportunity-linked pre-sales work when an older quote lacks the explicit handover link. The project retains the selected quote version's commercial values, scope, labour-day budget and pre-sales reference.
+
+Quote create/edit requests cannot set an approval outcome directly. Submit, approve and status actions use their dedicated permission-checked workflow. Accepted-quote retries safely return the existing project. A transaction-scoped database lock protects project numbering and duplicate creation across concurrent entry points. Closed/Won/Lost opportunities are not moved backwards by new pre-sales requests.
+
+`npm run test:journey` runs a real service/database flow in a newly generated local schema and removes only that schema afterwards. It refuses non-local database hosts, disables email delivery, and does not seed or alter the normal dataset.
+
 ## Opportunity Stage Workflow
 
 Stages:
@@ -45,7 +57,7 @@ Sprint 5.1 accepted quote workflow:
 - Opportunity status is set to won.
 - Opportunity value and weighted value are updated to the accepted quote sell total.
 - A completed activity is logged against the opportunity and account.
-- Project creation remains deferred.
+- Project creation is now automatic through the shared project creation service; the earlier Sprint 5.1 deferral is superseded.
 
 ## Opportunity Lost Workflow
 

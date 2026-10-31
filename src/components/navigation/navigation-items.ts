@@ -10,10 +10,10 @@ export type NavigationItem = {
   alwaysVisible?: boolean;
 };
 
-export const approvedRoleNames = ["Administrator", "Sales", "Pre-Sales", "Project Engineer", "Project Manager", "Field Engineer", "Finance", "Business Operations"] as const;
+export const approvedRoleNames = ["Administrator", "Sales", "Pre-Sales", "Project Engineer", "Project Manager", "Field Engineer", "Finance", "Business Operations", "Staff"] as const;
 
 export const navigationItems: NavigationItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["Administrator"] },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["Administrator", "Staff"] },
   { href: "/crm/accounts", label: "Accounts", icon: Building2, roles: ["Administrator", "Sales", "Pre-Sales", "Business Operations"], permissions: ["crm.account.read_all", "crm.account.read_own", "crm.account.create", "crm.account.update"] },
   { href: "/crm/contacts", label: "Contacts", icon: Contact, roles: ["Administrator", "Sales", "Pre-Sales", "Business Operations"], permissions: ["crm.contact.read_all", "crm.contact.read_own", "crm.contact.create", "crm.contact.update"] },
   { href: "/crm/leads", label: "Leads", icon: UserRoundPlus, roles: ["Administrator", "Sales", "Pre-Sales", "Business Operations"], permissions: ["crm.lead.read_all", "crm.lead.read_own", "crm.lead.create", "crm.lead.update"] },

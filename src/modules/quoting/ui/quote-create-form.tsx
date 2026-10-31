@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { friendlyActionError } from "@/lib/client-action-errors";
@@ -35,8 +35,10 @@ export function QuoteCreateForm({
   const initialSelection = initialQuoteCreateSelection({ accounts, opportunities, selectedOpportunityId });
   const [accountId, setAccountId] = useState(initialSelection.accountId);
   const [opportunityId, setOpportunityId] = useState(initialSelection.opportunityId);
-  const [contactId, setContactId] = useState(contacts.find((contact) => contact.accountId === initialSelection.accountId)?.id ?? "");
+  const [contactId, setContactId] = useState(opportunities.find((item) => item.id === initialSelection.opportunityId)?.primaryContactId ?? contacts.find((contact) => contact.accountId === initialSelection.accountId)?.id ?? "");
   const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+  const pendingRef = useRef(false);
   const selectedAccount = accounts.find((account) => account.id === accountId);
   const accountOpportunities = useMemo(
     () => filterOpportunitiesByAccount(opportunities, accountId),
@@ -57,7 +59,11 @@ export function QuoteCreateForm({
   }
 
   async function handleSubmit(formData: FormData) {
+    if (pendingRef.current) return;
+    pendingRef.current = true;
+    setPending(true);
     setError(null);
+    try {
     const response = await fetch("/api/v1/quotes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -87,6 +93,12 @@ export function QuoteCreateForm({
 
     router.push("/quotes");
     router.refresh();
+    } catch {
+      setError("Unable to connect. Please check your quotes before trying again.");
+    } finally {
+      pendingRef.current = false;
+      setPending(false);
+    }
   }
 
   return (
@@ -104,7 +116,7 @@ export function QuoteCreateForm({
       </label>
       <label className="block text-sm font-medium text-slate-700">
         Opportunity <span className="text-brand-700">*</span>
-        <select value={opportunityId} onChange={(event) => setOpportunityId(event.target.value)} required className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-sm">
+        <select value={opportunityId} onChange={(event) => { setOpportunityId(event.target.value); setContactId(opportunities.find((item) => item.id === event.target.value)?.primaryContactId ?? ""); }} required className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-sm">
           <option value="">Select opportunity</option>
           {accountOpportunities.map((opportunity) => (
             <option key={opportunity.id} value={opportunity.id}>
@@ -137,12 +149,12 @@ export function QuoteCreateForm({
       </label>
       <label className="block text-sm font-medium text-slate-700">
         High Level Scope <span className="text-brand-700">*</span>
-        <textarea name="highLevelScope" required className="mt-1 min-h-32 w-full rounded-md border border-slate-300 px-3 py-2 text-sm" />
+        <textarea key={selectedOpportunity?.id} name="highLevelScope" required defaultValue={selectedOpportunity?.notes ?? ""} className="mt-1 min-h-32 w-full rounded-md border border-slate-300 px-3 py-2 text-sm" />
       </label>
       {accountOpportunities.length === 0 && accountId ? <p className="text-sm text-amber-700">No opportunities are linked to this account. Add a CRM opportunity before creating a quote.</p> : null}
       {accountContacts.length === 0 && accountId ? <p className="text-sm text-amber-700">No contacts are linked to this account. Add a CRM contact before creating a quote.</p> : null}
       {error ? <p className="text-sm text-red-700">{error}</p> : null}
-      <Button type="submit" disabled={!accountId || !opportunityId || !contactId || accountContacts.length === 0}>Create Quote and Open Builder</Button>
+      <Button type="submit" disabled={pending || !accountId || !opportunityId || !contactId || accountContacts.length === 0}>{pending ? "Creating Quote..." : "Create Quote and Open Builder"}</Button>
     </form>
   );
 }

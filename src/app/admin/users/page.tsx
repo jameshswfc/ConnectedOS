@@ -4,6 +4,7 @@ import { requireAuthenticatedUser } from "@/services/auth/auth-service";
 import { userHasPermission } from "@/services/permissions/permission-service";
 import { listBusinessRoles, listUsers } from "@/services/users/user-service";
 import { AdminUserManagement } from "@/services/users/ui/admin-user-management";
+import { isMicrosoftLoginEnabled } from "@/services/auth/microsoft-login-service";
 
 export default async function UsersPage() {
   const user = await requireAuthenticatedUser();
@@ -19,6 +20,7 @@ export default async function UsersPage() {
   return (
     <AppShell title="Users" userName={user.name}>
       <AdminUserManagement
+        microsoftEnabled={isMicrosoftLoginEnabled()}
         users={users.map((row) => ({ ...row, lastLoginAt: row.lastLoginAt?.toISOString() ?? null }))}
         roles={roles}
       />

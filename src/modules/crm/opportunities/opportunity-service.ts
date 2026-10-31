@@ -1,7 +1,9 @@
 import { OpportunityStage, OpportunityStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { createAuditLog } from "@/services/audit/audit-service";
-import { activityVisibilityWhere, assertCanEditOwnedCrmRecord, assertCrmPermission, opportunityVisibilityWhere } from "@/modules/crm/crm-permissions";
+import { activityVisibilityWhere, assertCanEditOwnedCrmRecord, assertCrmPermission, leadVisibilityWhere, opportunityVisibilityWhere } from "@/modules/crm/crm-permissions";
+import { quoteVisibilityWhere } from "@/modules/quoting/quotes/quote-permissions";
+import { projectVisibilityWhere } from "@/modules/projects/project-permissions";
 import { calculateStageFinancials } from "@/modules/crm/opportunities/opportunity-calculations";
 import { calculateOpportunityHealth, matchesHealthFilter, type OpportunityHealthStatus } from "@/modules/crm/opportunities/opportunity-health";
 import { defaultOpportunityStage, isOpportunityStage } from "@/modules/crm/opportunities/opportunity-stages";
@@ -50,6 +52,7 @@ export async function listOpportunities(context: CrmAccessContext, filters: stri
 }
 
 export async function getOpportunity(context: CrmAccessContext, id: string) {
+  const canAccess = (...codes: string[]) => context.permissionLevel === "administrator" || context.permissions.includes("admin.users") || codes.some((code) => context.permissions.includes(code));
   const opportunity = await prisma.opportunity.findFirst({
     where: { AND: [opportunityVisibilityWhere(context), { id }] },
     include: {
@@ -58,21 +61,26 @@ export async function getOpportunity(context: CrmAccessContext, id: string) {
       owner: true,
       salesActivities: { where: activityVisibilityWhere(context), include: { account: true, contact: true, lead: true }, orderBy: { createdAt: "desc" } },
       quotes: {
-        where: { deletedAt: null },
+        where: canAccess("quotes.read_all", "quotes.read_own") ? quoteVisibilityWhere(context) : { id: { in: [] } },
         include: {
           versions: { orderBy: { versionNumber: "desc" }, take: 1 },
           approvalRequests: { orderBy: { requestedAt: "desc" }, take: 1 }
         },
         orderBy: { updatedAt: "desc" }
       },
-      presalesRequests: { where: presalesVisibilityWhere(context), include: { assignedTo: true, quote: true }, orderBy: { updatedAt: "desc" } },
+      presalesRequests: { where: canAccess("presales.read_all", "presales.read_assigned", "presales.create") ? presalesVisibilityWhere(context) : { id: { in: [] } }, include: { assignedTo: true, quote: true }, orderBy: { updatedAt: "desc" } },
+      projects: { where: canAccess("projects.read_all", "projects.read_assigned", "projects.update") ? projectVisibilityWhere(context) : { id: { in: [] } }, select: { id: true, projectNumber: true, name: true, status: true }, orderBy: { createdAt: "desc" } },
       stageHistory: { orderBy: { changedAt: "desc" } }
     }
   });
   if (!opportunity) {
     throw new Error("Opportunity not found");
   }
-  return { ...opportunity, healthStatus: calculateOpportunityHealth(opportunity) };
+  const linkedLeads = canAccess("crm.lead.read_all", "crm.lead.read_own") ? await prisma.lead.findMany({
+    where: { AND: [leadVisibilityWhere(context), { convertedOpportunityId: id }] },
+    select: { id: true, accountName: true, status: true }
+  }) : [];
+  return { ...opportunity, linkedLeads, healthStatus: calculateOpportunityHealth(opportunity) };
 }
 
 export async function createOpportunity(context: CrmAccessContext, input: OpportunityCreateInput) {

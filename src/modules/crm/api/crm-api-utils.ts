@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { ZodError, type z } from "zod";
 import { errorResponse } from "@/lib/api-response";
-import { requireAuthenticatedUser } from "@/services/auth/auth-service";
+import { requireAuthenticatedApiUser } from "@/services/auth/auth-service";
+import { apiAuthErrorResponse } from "@/services/auth/api-auth-error";
 import type { CrmAccessContext } from "@/modules/crm/types/crm-context";
 
 export async function getCrmContext(): Promise<CrmAccessContext> {
-  const user = await requireAuthenticatedUser();
+  const user = await requireAuthenticatedApiUser();
   return {
     userId: user.id,
     permissions: user.permissions,
@@ -28,6 +29,8 @@ export function getOptionalQueryParam(request: Request, name: string) {
 }
 
 export function handleApiError(error: unknown) {
+  const authResponse = apiAuthErrorResponse(error);
+  if (authResponse) return authResponse;
   if (error instanceof ZodError) {
     return NextResponse.json(errorResponse("VALIDATION_ERROR", "Request validation failed."), { status: 400 });
   }

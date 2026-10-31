@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { errorResponse } from "@/lib/api-response";
-import { requireAuthenticatedUser } from "@/services/auth/auth-service";
+import { requireAuthenticatedApiUser } from "@/services/auth/auth-service";
+import { apiAuthErrorResponse } from "@/services/auth/api-auth-error";
 import type { CrmAccessContext } from "@/modules/crm/types/crm-context";
 
 export async function getModuleContext(): Promise<CrmAccessContext> {
-  const user = await requireAuthenticatedUser();
+  const user = await requireAuthenticatedApiUser();
   return {
     userId: user.id,
     permissions: user.permissions,
@@ -23,6 +24,8 @@ type ModuleApiErrorMeta = {
 };
 
 export function handleModuleApiError(error: unknown, meta?: ModuleApiErrorMeta) {
+  const authResponse = apiAuthErrorResponse(error);
+  if (authResponse) return authResponse;
   if (error instanceof ZodError) {
     const issue = error.issues[0];
     const field = issue?.path?.length ? `${issue.path.join(".")}: ` : "";

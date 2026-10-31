@@ -1,6 +1,8 @@
 import { QuoteStatus } from "@prisma/client";
 import type { QuoteStatus as QuoteStatusValue } from "@prisma/client";
 
+export class QuoteWorkflowError extends Error {}
+
 export const validQuoteStatusTransitions: Record<QuoteStatusValue, QuoteStatusValue[]> = {
   [QuoteStatus.draft]: [QuoteStatus.internal_review],
   [QuoteStatus.internal_review]: [QuoteStatus.approved, QuoteStatus.rejected],
@@ -15,7 +17,7 @@ export const validQuoteStatusTransitions: Record<QuoteStatusValue, QuoteStatusVa
 export function assertValidQuoteStatusTransition(fromStatus: QuoteStatusValue, toStatus: QuoteStatusValue) {
   if (fromStatus === toStatus) return;
   if (!validQuoteStatusTransitions[fromStatus]?.includes(toStatus)) {
-    throw new Error(`Invalid quote status transition: ${fromStatus} to ${toStatus}`);
+    throw new QuoteWorkflowError(`This quote cannot move from ${fromStatus.replaceAll("_", " ")} to ${toStatus.replaceAll("_", " ")}. Refresh the quote and complete the approval steps first.`);
   }
 }
 

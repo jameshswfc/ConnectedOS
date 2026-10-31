@@ -42,4 +42,9 @@ describe("pre-sales service helpers", () => {
     expect(folder.folderPath).toBe("PreSales/2026/PS-2026-0001 Hilton Manchester Airport WiFi Upgrade");
     expect(folder.folderUrl).toBe("sharepoint://ConnectedHospitality/PreSales/2026/PS-2026-0001 Hilton Manchester Airport WiFi Upgrade");
   });
+
+  it("does not reopen won or lost opportunities for a pre-sales handover", () => {
+    expect(buildPresalesOpportunityStageSync(OpportunityStage.closed_won_po_received, 100)).toBeNull();
+    expect(buildPresalesOpportunityStageSync(OpportunityStage.lost, 100)).toBeNull();
+  });
 });

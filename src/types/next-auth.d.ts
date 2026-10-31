@@ -12,6 +12,7 @@ declare module "next-auth" {
       permissionLevel?: string;
       permissions: string[];
       mustChangePassword?: boolean;
+      authProvider?: string;
     };
   }
 }
@@ -23,5 +24,6 @@ declare module "next-auth/jwt" {
     permissionLevel?: string;
     permissions?: string[];
     mustChangePassword?: boolean;
+    authProvider?: string;
   }
 }

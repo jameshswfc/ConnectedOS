@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { errorResponse, successResponse } from "@/lib/api-response";
-import { requireAuthenticatedUser } from "@/services/auth/auth-service";
+import { requireAuthenticatedApiUser } from "@/services/auth/auth-service";
+import { handleModuleApiError } from "@/modules/operations/api-utils";
 import { createNotification, listNotificationsForUser } from "@/services/notifications/notification-service";
 
 const createNotificationSchema = z.object({
@@ -10,27 +11,33 @@ const createNotificationSchema = z.object({
 });
 
 export async function GET() {
-  const user = await requireAuthenticatedUser();
-  const notifications = await listNotificationsForUser(user.id);
-
-  return NextResponse.json(successResponse(notifications));
+  try {
+    const user = await requireAuthenticatedApiUser();
+    return NextResponse.json(successResponse(await listNotificationsForUser(user.id)));
+  } catch (error) {
+    return handleModuleApiError(error);
+  }
 }
 
 export async function POST(request: Request) {
-  const user = await requireAuthenticatedUser();
-  const parsedBody = createNotificationSchema.safeParse(await request.json());
+  try {
+    const user = await requireAuthenticatedApiUser();
+    const parsedBody = createNotificationSchema.safeParse(await request.json());
 
-  if (!parsedBody.success) {
-    return NextResponse.json(errorResponse("VALIDATION_ERROR", "Notification title and body are required."), {
-      status: 400
+    if (!parsedBody.success) {
+      return NextResponse.json(errorResponse("VALIDATION_ERROR", "Notification title and body are required."), {
+        status: 400
+      });
+    }
+
+    const notification = await createNotification({
+      userId: user.id,
+      title: parsedBody.data.title,
+      body: parsedBody.data.body
     });
+
+    return NextResponse.json(successResponse(notification), { status: 201 });
+  } catch (error) {
+    return handleModuleApiError(error);
   }
-
-  const notification = await createNotification({
-    userId: user.id,
-    title: parsedBody.data.title,
-    body: parsedBody.data.body
-  });
-
-  return NextResponse.json(successResponse(notification), { status: 201 });
 }

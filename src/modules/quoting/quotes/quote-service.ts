@@ -10,7 +10,7 @@ import { presalesVisibilityWhere } from "@/modules/presales/presales-permissions
 import { DEFAULT_QUOTE_TERMS } from "@/modules/quoting/quotes/quote-terms";
 import { createProjectChangeRequestFromQuoteChange } from "@/modules/projects/project-change-request-automation";
 import { syncProjectChangeRequestFromQuote } from "@/modules/projects/project-service";
-import type { QuoteCreateInput, QuoteLineCreateInput, QuoteLineUpdateInput, QuoteUpdateInput, QuoteVersionTermsUpdateInput } from "@/modules/quoting/schemas/quoting-schemas";
+import { quoteCreateSchema, quoteUpdateSchema, type QuoteCreateInput, type QuoteLineCreateInput, type QuoteLineUpdateInput, type QuoteUpdateInput, type QuoteVersionTermsUpdateInput } from "@/modules/quoting/schemas/quoting-schemas";
 import type { CrmAccessContext } from "@/modules/crm/types/crm-context";
 
 const quoteInclude = {
@@ -86,6 +86,7 @@ export async function getQuote(context: CrmAccessContext, id: string) {
 
 export async function createQuote(context: CrmAccessContext, input: QuoteCreateInput) {
   assertQuotePermission(context, "quotes.create");
+  input = quoteCreateSchema.parse(input);
   const opportunity = await assertCanUseQuoteOpportunity(context, input.opportunityId);
   const contact = await prisma.contact.findFirst({
     where: { id: input.contactId, accountId: opportunity.accountId, deletedAt: null }
@@ -124,6 +125,15 @@ export async function createQuote(context: CrmAccessContext, input: QuoteCreateI
       }
     });
 
+    const handover = await transaction.presalesRequest.findFirst({
+      where: { opportunityId: opportunity.id, deletedAt: null, quoteId: null, status: { not: "cancelled" } },
+      orderBy: { updatedAt: "desc" }, select: { id: true }
+    });
+    if (handover) await transaction.presalesRequest.updateMany({
+      where: { id: handover.id, quoteId: null },
+      data: { quoteId: createdQuote.id, updatedById: context.userId }
+    });
+
     await transaction.salesActivity.create({
       data: {
         accountId: opportunity.accountId,
@@ -149,6 +159,7 @@ export async function createQuote(context: CrmAccessContext, input: QuoteCreateI
 
 export async function updateQuote(context: CrmAccessContext, id: string, input: QuoteUpdateInput) {
   assertQuotePermission(context, "quotes.update");
+  input = quoteUpdateSchema.parse(input);
   const previous = await getQuote(context, id);
   assertCanEditQuote(context, previous);
   const quote = await prisma.quote.update({

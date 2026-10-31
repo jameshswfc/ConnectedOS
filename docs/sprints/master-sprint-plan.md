@@ -1,5 +1,13 @@
 # Master Sprint Plan
 
+## Restart: Identity and Core Workflow Focus (31 October 2026)
+
+Priority is the lead-to-pre-sales-to-quote-to-project journey. See `docs/planning/connectedos-restart-and-delivery-plan.md` for evidence, remaining gaps, product research and the delivery sequence.
+
+This pass separates API authentication errors from page redirects; introduces opt-in Microsoft tenant-member sign-in with restricted Staff onboarding and explicit existing-user linking; groups permission-filtered navigation and restores mobile menu access. Local fallback remains available. No migration is required. No production seed/reset/cleanup is part of deployment.
+
+Microsoft app registration has been created by James for the company tenant. Optional member claims, secure credential configuration, existing-user links and live sign-in testing remain rollout gates. Fasthosts VPS identity is verified against portal DNS; server release/deployment commands remain unverified. SMTP delivery, live Graph, document-led pre-sales generation and the Hilton CBOM adapter remain separate work, not completed integrations.
+
 ## Delivery Approach
 
 ConnectedOS must be built incrementally. Codex must not attempt to build the whole system at once.

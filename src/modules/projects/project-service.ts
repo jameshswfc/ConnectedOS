@@ -327,14 +327,22 @@ async function createProjectFromQuoteInternal(context: CrmAccessContext, quoteId
   if (!quoteVersion) throw new Error("Quote version not found");
   const projectType = input.projectType ?? quote.opportunity.opportunityType ?? OpportunityType.other;
   const totalResourceDaysBudget = input.totalResourceDaysBudget ?? calculateLabResourceDays(quoteVersion.lines);
-  const presalesRequest = quote.presalesRequests[0];
+  const presalesRequest = quote.presalesRequests[0] ?? await prisma.presalesRequest.findFirst({
+    where: { opportunityId: quote.opportunityId, deletedAt: null, status: { not: "cancelled" } },
+    include: { assignedTo: true, deliverables: true },
+    orderBy: { updatedAt: "desc" }
+  }) ?? undefined;
   const description = input.description ?? projectDescriptionFromSource(quote, presalesRequest);
   const scopeSummary = input.scopeSummary ?? quote.highLevelScope;
   const startDate = input.startDate ?? undefined;
   const targetEndDate = input.targetEndDate ?? quote.opportunity.expectedCloseDate ?? undefined;
   const projectManagerResource = input.projectManagerId ? await ensureResourceForUser(input.projectManagerId) : null;
 
-  const project = await prisma.$transaction(async (transaction) => {
+  const creation = await prisma.$transaction(async (transaction) => {
+    // Cover all creation entry points, including simultaneous acceptance/retry requests.
+    await transaction.$queryRaw`SELECT pg_advisory_xact_lock(hashtext('connectedos:project-creation'))::text`;
+    const existingProject = await transaction.project.findFirst({ where: { quoteId, deletedAt: null } });
+    if (existingProject) return { project: existingProject, created: false };
     const projectNumber = await nextProjectNumber(transaction);
     const created = await transaction.project.create({
       data: {
@@ -354,11 +362,11 @@ async function createProjectFromQuoteInternal(context: CrmAccessContext, quoteId
         baselineEndDate: input.baselineEndDate ?? targetEndDate,
         description,
         scopeSummary,
-        commercialValue: quote.sellTotal,
-        budgetCost: quote.costTotal,
-        budgetSell: quote.sellTotal,
+        commercialValue: quoteVersion.sellTotal,
+        budgetCost: quoteVersion.costTotal,
+        budgetSell: quoteVersion.sellTotal,
         paymentTerms: quoteVersion.terms,
-        outstandingAmount: quote.sellTotal,
+        outstandingAmount: quoteVersion.sellTotal,
         totalResourceDaysBudget,
         createdById: context.userId,
         updatedById: context.userId
@@ -392,9 +400,11 @@ async function createProjectFromQuoteInternal(context: CrmAccessContext, quoteId
         completedAt: new Date()
       }
     });
-    return created;
+    return { project: created, created: true };
   });
 
+  const project = creation.project;
+  if (!creation.created) return getCreatedProjectForSource(context, project.id, options.source ?? "manual");
   await recalculateProjectRollups(project.id);
   await createAuditLog({ userId: context.userId, module: "projects", entityType: "Project", entityId: project.id, action: projectCreationAuditAction(options.source ?? "manual"), newValue: project as unknown as Prisma.InputJsonValue });
   await createNotification({ userId: context.userId, title: `Project ${project.projectNumber} created`, body: `${project.name} was created from quote ${quote.quoteNumber}.`, metadata: { module: "projects", link: `/projects/${project.id}` } });

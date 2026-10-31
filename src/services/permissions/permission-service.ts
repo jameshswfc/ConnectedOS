@@ -10,7 +10,7 @@ export async function getUserPermissions(userId: string) {
     include: { role: { include: { rolePermissions: { include: { permission: true } } } } }
   });
 
-  if (!user) return [];
+  if (!user || !user.isActive || user.deletedAt || user.deactivatedAt) return [];
   if (user.permissionLevel === "administrator") {
     const permissions = await prisma.permission.findMany({ select: { code: true } });
     return permissions.map((permission) => permission.code);

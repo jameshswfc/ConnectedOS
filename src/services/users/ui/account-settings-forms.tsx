@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { friendlyActionError } from "@/lib/client-action-errors";
 
-export function AccountSettingsForms({ user, passwordOnly = false, redirectAfterPasswordChange }: { user: { displayName: string; email: string; role?: { name: string }; permissionLevel: string }; passwordOnly?: boolean; redirectAfterPasswordChange?: string }) {
+export function AccountSettingsForms({ user, passwordOnly = false, redirectAfterPasswordChange }: { user: { displayName: string; email: string; role?: { name: string }; permissionLevel: string; hasLocalPassword?: boolean }; passwordOnly?: boolean; redirectAfterPasswordChange?: string }) {
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
 
@@ -52,13 +52,13 @@ export function AccountSettingsForms({ user, passwordOnly = false, redirectAfter
           <Button type="submit">Save Profile</Button>
         </form>
       ) : null}
-      <form action={changePassword} className={passwordOnly ? "space-y-3" : "space-y-3 border-t border-slate-100 pt-4"}>
+      {user.hasLocalPassword === false ? <p className="text-sm text-slate-600">Your password is managed by Microsoft 365.</p> : <form action={changePassword} className={passwordOnly ? "space-y-3" : "space-y-3 border-t border-slate-100 pt-4"}>
         <label className="block text-sm font-medium text-slate-700">Current password<input name="currentPassword" type="password" required className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-sm" /></label>
         <label className="block text-sm font-medium text-slate-700">New password<input name="password" type="password" required className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-sm" /></label>
         <label className="block text-sm font-medium text-slate-700">Confirm new password<input name="confirmPassword" type="password" required className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-sm" /></label>
         <p className="text-xs text-slate-500">Minimum 10 characters, with at least one letter and one number.</p>
         <Button type="submit" variant="secondary">Change Password</Button>
-      </form>
+      </form>}
     </div>
   );
 }

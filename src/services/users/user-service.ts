@@ -146,9 +146,10 @@ export async function listBusinessRoles() {
   });
 }
 
-export const businessRoleNames = ["Administrator", "Sales", "Pre-Sales", "Project Engineer", "Project Manager", "Field Engineer", "Finance", "Business Operations"] as const;
+export const businessRoleNames = ["Administrator", "Sales", "Pre-Sales", "Project Engineer", "Project Manager", "Field Engineer", "Finance", "Business Operations", "Staff"] as const;
 
 export const approvedRoleAccess: Record<(typeof businessRoleNames)[number], string> = {
+  Staff: "Basic account access only. An administrator assigns a business role before operational records are available.",
   Administrator: "Everything, user administration, roles, permissions, settings and all current and future modules.",
   Sales: "Accounts, contacts, leads, opportunities, CRM pipeline, CRM forecast, activities, pre-sales and quotes.",
   "Pre-Sales": "Accounts, contacts, leads, opportunities, activities, pre-sales and quotes.",
@@ -187,6 +188,8 @@ function sanitizeUser<TUser extends User & { role?: { id: string; name: string }
     permissionLevel: user.permissionLevel,
     isActive: user.isActive,
     mustChangePassword: user.mustChangePassword,
+    microsoftId: user.microsoftId,
+    hasLocalPassword: Boolean(user.passwordHash),
     lastLoginAt: user.lastLoginAt,
     userType: user.userType,
     createdAt: user.createdAt,

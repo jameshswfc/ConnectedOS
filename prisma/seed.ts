@@ -7,6 +7,7 @@ import { resolveInitialAdminPassword } from "../src/services/users/initial-admin
 const prisma = new PrismaClient();
 
 const roles = [
+  "Staff",
   "Administrator",
   "Sales",
   "Pre-Sales",
@@ -139,6 +140,7 @@ const permissions = [
 ] as const;
 
 const rolePermissionMap: Record<string, string[]> = {
+  Staff: [],
   Administrator: permissions.slice(),
   Sales: [
     "crm.account.read_all",

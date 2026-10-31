@@ -18,7 +18,7 @@ export default async function ChangePasswordPage() {
           {profile.mustChangePassword ? (
             <p className="rounded-md border border-gold-200 bg-gold-50 px-3 py-2 text-sm text-brand-900">You must change your password before continuing.</p>
           ) : null}
-          <AccountSettingsForms user={{ displayName: profile.displayName, email: profile.email, role: profile.role, permissionLevel: profile.permissionLevel }} passwordOnly redirectAfterPasswordChange="/dashboard" />
+          <AccountSettingsForms user={{ displayName: profile.displayName, email: profile.email, role: profile.role, permissionLevel: profile.permissionLevel, hasLocalPassword: profile.hasLocalPassword }} passwordOnly redirectAfterPasswordChange="/dashboard" />
         </CardContent>
       </Card>
     </AppShell>

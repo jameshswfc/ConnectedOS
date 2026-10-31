@@ -4,16 +4,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import { authorizeLocalCredentials } from "@/services/auth/local-login-service";
 import { permissionCodesForLevel } from "@/services/users/user-service";
-
-type MicrosoftProfile = {
-  oid?: string;
-  sub?: string;
-  name?: string;
-  email?: string;
-  preferred_username?: string;
-};
-
-const isEntraEnabled = process.env.ENABLE_ENTRA_LOGIN === "true" && Boolean(process.env.AZURE_AD_CLIENT_ID && process.env.AZURE_AD_CLIENT_SECRET);
+import { isMicrosoftLoginEnabled, MicrosoftLoginError, signInMicrosoftUser } from "@/services/auth/microsoft-login-service";
 
 export function resolveAuthRedirect(url: string, baseUrl: string) {
   if (url.startsWith("/")) {
@@ -42,12 +33,16 @@ export const authOptions: NextAuthOptions = {
         return authorizeLocalCredentials(credentials ?? {});
       }
     }),
-    ...(isEntraEnabled
+    ...(isMicrosoftLoginEnabled()
       ? [
           AzureADProvider({
             clientId: process.env.AZURE_AD_CLIENT_ID ?? "",
             clientSecret: process.env.AZURE_AD_CLIENT_SECRET ?? "",
-            tenantId: process.env.AZURE_AD_TENANT_ID
+            tenantId: process.env.AZURE_AD_TENANT_ID,
+            // Sign-in must not depend on Graph/photo permissions or network calls.
+            profile(profile) {
+              return { id: profile.sub, name: profile.name, email: profile.email, image: null };
+            }
           })
         ]
       : []),
@@ -57,7 +52,8 @@ export const authOptions: NextAuthOptions = {
     maxAge: 8 * 60 * 60
   },
   pages: {
-    signIn: "/login"
+    signIn: "/login",
+    error: "/login"
   },
   callbacks: {
     async redirect({ url, baseUrl }) {
@@ -81,57 +77,25 @@ export const authOptions: NextAuthOptions = {
         return true;
       }
 
-      const microsoftProfile = profile as MicrosoftProfile | undefined;
-      const email = (microsoftProfile?.email ?? microsoftProfile?.preferred_username ?? "").toLowerCase();
-      const microsoftId = microsoftProfile?.oid ?? microsoftProfile?.sub ?? account?.providerAccountId;
-
-      if (!email) {
-        return false;
+      if (account?.provider !== "azure-ad" || !isMicrosoftLoginEnabled()) return false;
+      try {
+        const member = await signInMicrosoftUser(profile);
+        user.id = member.id;
+        user.name = member.displayName;
+        user.email = member.email;
+        return true;
+      } catch (error) {
+        if (error instanceof MicrosoftLoginError) return `/login?error=${error.reason}`;
+        console.error("[auth:microsoft] Sign-in failed", { message: error instanceof Error ? error.message : String(error) });
+        return "/login?error=MicrosoftSignInFailed";
       }
-
-      const existingUser = await prisma.user.findUnique({
-        where: { email },
-        include: { role: true }
-      });
-
-      if (!existingUser || !existingUser.isActive || existingUser.deletedAt) {
-        return false;
-      }
-
-      if (microsoftId && existingUser.microsoftId !== microsoftId) {
-        await prisma.user.update({
-          where: { id: existingUser.id },
-          data: {
-            microsoftId,
-            displayName: microsoftProfile?.name ?? existingUser.displayName
-          }
-        });
-      }
-
-      await prisma.auditLog.create({
-        data: {
-          userId: existingUser.id,
-          module: "auth",
-          entityType: "User",
-          entityId: existingUser.id,
-          action: "login",
-          newValue: {
-            email
-          }
-        }
-      });
-
-      return true;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
+      if (account) token.authProvider = account.provider;
       const userId = typeof user?.id === "string" ? user.id : typeof token.userId === "string" ? token.userId : undefined;
-      const email = typeof token.email === "string" ? token.email.trim().toLowerCase() : undefined;
+      if (!userId) return { ...token, userId: undefined, role: undefined, permissionLevel: undefined, permissions: [], mustChangePassword: false };
       const dbUser = await prisma.user.findFirst({
-        where: userId
-          ? { id: userId }
-          : email
-            ? { email: { equals: email, mode: "insensitive" } }
-            : { id: "__missing_user__" },
+        where: { id: userId },
         include: {
           role: {
             include: {
@@ -145,26 +109,33 @@ export const authOptions: NextAuthOptions = {
         }
       });
 
-      if (!dbUser) {
-        return token;
+      if (!dbUser || !dbUser.isActive || dbUser.deletedAt || dbUser.deactivatedAt) {
+        return { ...token, userId: undefined, role: undefined, permissionLevel: undefined, permissions: [], mustChangePassword: false };
       }
 
       const allPermissions = await prisma.permission.findMany({ select: { code: true } });
       const rolePermissions = dbUser.role.rolePermissions.map((rolePermission) => rolePermission.permission.code);
       token.userId = dbUser.id;
+      token.name = dbUser.displayName;
+      token.email = dbUser.email;
       token.role = dbUser.role.name;
       token.permissionLevel = dbUser.permissionLevel;
-      token.mustChangePassword = dbUser.mustChangePassword;
+      token.mustChangePassword = token.authProvider !== "azure-ad" && dbUser.mustChangePassword;
       token.permissions = permissionCodesForLevel(dbUser.permissionLevel, rolePermissions, allPermissions.map((permission) => permission.code));
       return token;
     },
     async session({ session, token }) {
+      if (!token.userId) {
+        session.user = undefined;
+        return session;
+      }
       if (session.user) {
         session.user.id = token.userId as string | undefined;
         session.user.role = token.role as string | undefined;
         session.user.permissionLevel = token.permissionLevel as string | undefined;
         session.user.mustChangePassword = Boolean(token.mustChangePassword);
         session.user.permissions = (token.permissions as string[] | undefined) ?? [];
+        session.user.authProvider = token.authProvider;
       }
 
       return session;

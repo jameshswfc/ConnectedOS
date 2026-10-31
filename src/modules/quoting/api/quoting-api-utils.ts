@@ -1,15 +1,18 @@
 import { NextResponse } from "next/server";
 import { ZodError, type z } from "zod";
 import { errorResponse } from "@/lib/api-response";
-import { requireAuthenticatedUser } from "@/services/auth/auth-service";
+import { requireAuthenticatedApiUser } from "@/services/auth/auth-service";
+import { apiAuthErrorResponse } from "@/services/auth/api-auth-error";
+import { QuoteWorkflowError } from "@/modules/quoting/quotes/quote-status-workflow";
 import type { CrmAccessContext } from "@/modules/crm/types/crm-context";
 
 export async function getQuotingContext(): Promise<CrmAccessContext> {
-  const user = await requireAuthenticatedUser();
+  const user = await requireAuthenticatedApiUser();
   return {
     userId: user.id,
     permissions: user.permissions,
-    permissionLevel: user.permissionLevel
+    permissionLevel: user.permissionLevel,
+    role: user.role
   };
 }
 
@@ -23,6 +26,9 @@ export function getSearchParam(request: Request) {
 }
 
 export function handleQuotingApiError(error: unknown) {
+  const authResponse = apiAuthErrorResponse(error);
+  if (authResponse) return authResponse;
+  if (error instanceof QuoteWorkflowError) return NextResponse.json(errorResponse("VALIDATION_ERROR", error.message), { status: 400 });
   if (error instanceof ZodError) {
     return NextResponse.json(errorResponse("VALIDATION_ERROR", "Request validation failed."), { status: 400 });
   }

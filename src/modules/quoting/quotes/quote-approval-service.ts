@@ -6,9 +6,9 @@ import { sendTemplatedEmail, sendTemplatedEmailToUserIds } from "@/services/emai
 import { createNotification } from "@/services/notifications/notification-service";
 import { calculateStageFinancials } from "@/modules/crm/opportunities/opportunity-calculations";
 import { CLOSED_OPPORTUNITY_STAGES, getStageProbability } from "@/modules/crm/opportunities/opportunity-stages";
-import { assertQuotePermission } from "@/modules/quoting/quotes/quote-permissions";
+import { assertCanEditQuote, assertQuotePermission } from "@/modules/quoting/quotes/quote-permissions";
 import { getQuote, getQuoteVersion } from "@/modules/quoting/quotes/quote-service";
-import { assertValidQuoteStatusTransition, statusTimestampField } from "@/modules/quoting/quotes/quote-status-workflow";
+import { assertValidQuoteStatusTransition, QuoteWorkflowError, statusTimestampField } from "@/modules/quoting/quotes/quote-status-workflow";
 import { ProjectCreationService, shouldAutoCreateProjectForQuoteStatus, syncProjectChangeRequestFromQuote } from "@/modules/projects/project-service";
 import type { CrmAccessContext } from "@/modules/crm/types/crm-context";
 
@@ -69,6 +69,7 @@ export async function getApprovalStatus(context: CrmAccessContext, quoteId: stri
 export async function submitQuoteForApproval(context: CrmAccessContext, quoteId: string) {
   assertQuotePermission(context, "quotes.update");
   const quote = await getQuote(context, quoteId);
+  assertCanEditQuote(context, quote);
   const currentVersion = quote.versions.find((version) => version.versionNumber === quote.currentVersionNumber) ?? quote.versions[0];
   if (!currentVersion) throw new Error("Quote has no version to submit");
   if (currentVersion.isLocked) throw new Error("Approved quote version is locked");
@@ -268,8 +269,16 @@ export async function requestQuoteChanges(context: CrmAccessContext, quoteId: st
 
 export async function changeQuoteStatus(context: CrmAccessContext, quoteId: string, status: QuoteStatusValue) {
   assertQuotePermission(context, "quotes.update");
+  if (status !== "sent" && status !== "accepted" && status !== "declined" && status !== "expired") {
+    throw new QuoteWorkflowError("Use Submit for Approval and the authorised approval actions to review this quote.");
+  }
   const quote = await getQuote(context, quoteId);
+  assertCanEditQuote(context, quote);
   assertValidQuoteStatusTransition(quote.status, status);
+  if (quote.status === status) {
+    if (status === "accepted" && !quote.projectChangeRequestId) await ProjectCreationService.createFromAcceptedQuote(context, quoteId);
+    return quote;
+  }
   const timestampField = statusTimestampField(status);
   const result = await prisma.$transaction(async (transaction) => {
     const previousOpportunity = quote.opportunityId

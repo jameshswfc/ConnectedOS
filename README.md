@@ -1,6 +1,6 @@
 # ConnectedOS
 
-ConnectedOS is the internal business operations platform for Connected Hospitality. The current checkpoint covers Sprint 1 platform foundation plus Sprint 2-3 CRM core, refinement, pipeline and forecasting work.
+ConnectedOS is the internal business operations platform for Connected Hospitality. It contains CRM, quoting, pre-sales, projects, scheduling, leave, expenses, procurement, finance, reporting, assets, helpdesk and administration. Module existence is not production acceptance: see the [restart findings and delivery plan](docs/planning/connectedos-restart-and-delivery-plan.md).
 
 The latest pre-testing hardening pass adds:
 
@@ -27,7 +27,7 @@ cp .env.example .env
 
 3. Fill in the local login and NextAuth values in `.env`.
 
-Microsoft Entra login is currently parked. Local email/password login is the active sign-in method.
+Local email/password login remains the fallback. Microsoft 365 sign-in is opt-in and requires tenant configuration and existing-account linking. Follow the [Microsoft 365 sign-in rollout](docs/integrations/microsoft-365-sign-in.md) before enabling it.
 
 4. Start PostgreSQL:
 
@@ -35,7 +35,7 @@ Microsoft Entra login is currently parked. Local email/password login is the act
 docker compose up -d
 ```
 
-5. Run the database migration and seed:
+5. For a fresh local development database only, run the database migration and seed. Do not seed, clean or reset an existing production database as a deployment step:
 
 ```bash
 npm run prisma:migrate
@@ -130,7 +130,7 @@ Admin-created users and users whose passwords are reset by an administrator must
 
 The normal `/settings` page remains available for profile and password management after first-login password change is complete.
 
-Set `ENABLE_ENTRA_LOGIN=true` only when Microsoft Entra is ready to be re-enabled.
+Set `ENABLE_ENTRA_LOGIN=true` only after completing the Microsoft 365 rollout checklist. New tenant members receive the restricted Staff role; existing users are explicitly linked to preserve ownership and privileges. No migration is required for this sign-in change.
 
 ## Email Notifications
 
@@ -239,7 +239,6 @@ Known deferred CRM features:
 - FX conversion and GBP-normalized multi-currency opportunity values.
 - Scheduled/background CRM notification jobs.
 - Full pipeline by owner reporting and richer forecasting.
-- Lead conversion workflow.
 - Stale opportunity and high-value opportunity automation rules.
 - Lost reason reporting beyond captured fields.
 
@@ -255,6 +254,6 @@ See `docs/crm/crm-checkpoint-sprint-1-3.md` for the full checkpoint.
 
 ## Sprint 1 Boundaries
 
-The Sprint 1 scaffold intentionally did not implement CRM, quoting, pre-sales, project management, scheduling, leave, expenses, reporting, client portal, procurement, assets or AI assistant modules. CRM has since been implemented through the Sprint 1-3 checkpoint only.
+This section records the original Sprint 1 boundary, not the current implementation. Later modules are present as listed above. Live email delivery, live SharePoint integration, the pre-sales assistant and Hilton template automation still need dedicated acceptance work.
 
 SharePoint and Microsoft Graph are represented by a document service interface and stub only. Live Graph calls are deferred until the integration sprint.

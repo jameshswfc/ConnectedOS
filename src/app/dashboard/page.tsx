@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { brandAssets, brandCopy } from "@/lib/brand";
 import { getDashboardOverview } from "@/modules/dashboard/dashboard-service";
 import { requireAuthenticatedUser } from "@/services/auth/auth-service";
+import { canAccessNavigationPath } from "@/components/navigation/navigation-items";
 
 export default async function DashboardPage() {
   const user = await requireAuthenticatedUser();
@@ -40,7 +41,7 @@ export default async function DashboardPage() {
       <div className="mb-4 flex flex-wrap gap-2">
         <Link href="/settings"><Button variant="secondary">Settings</Button></Link>
         <Link href="/notifications"><Button variant="secondary">Notifications</Button></Link>
-        <Link href="/reports"><Button variant="secondary">Reports</Button></Link>
+        {canAccessNavigationPath("/reports", user.permissions, user.permissionLevel, user.role) ? <Link href="/reports"><Button variant="secondary">Reports</Button></Link> : null}
       </div>
       <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-4">
         {cards.map((card) => (

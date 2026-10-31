@@ -2,9 +2,11 @@
 
 ## Authentication
 
-ConnectedOS currently uses local email/password authentication.
+ConnectedOS supports local email/password authentication and opt-in single-tenant Microsoft 365 authentication.
 
-Microsoft Entra ID authentication is parked and remains deferred until re-enabled explicitly.
+Microsoft sign-in remains disabled until explicitly configured. See `docs/integrations/microsoft-365-sign-in.md`. Tenant members provision as Staff with no business permissions; guests are rejected. Existing users require an administrator-verified tenant/object-ID link, never automatic email-based account linking. Existing local login remains available for controlled rollout and recovery.
+
+Page authentication redirects remain separate from API authentication: signed-out APIs return JSON 401; permission/password-change gates return JSON 403, not caught redirect errors. Sessions recheck inactive/deleted status and current local roles. Microsoft sessions do not require a local password change.
 
 Local passwords must never be stored in plain text. Only password hashes may be stored.
 
