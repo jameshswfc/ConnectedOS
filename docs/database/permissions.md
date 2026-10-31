@@ -251,3 +251,10 @@ The sidebar groups only links already permitted by the existing navigation rules
 Page-level access denial should render the shared friendly AccessDenied experience or `/403`. API-level denial remains JSON `401` or `403`.
 
 Admin-created users and admin password resets set the local user `mustChangePassword` flag. Users with that flag are redirected to `/settings/change-password` until they successfully change their password, which clears the flag.
+# Combined Business Roles and Archived Users
+
+Users retain one primary role and can have additional approved business roles through `UserRole`. Effective access is the union of these roles, still subject to existing ownership, assignment and approval checks. Navigation and salesperson/engineer/PM selectors recognise additional roles. Staff is an unassigned-access role and cannot be combined with business roles. Administrator cannot be assigned as an additional role. Combining ordinary business roles never grants `admin.*` permissions; permission level remains a separate, administrator-controlled setting.
+
+Administrators can archive an already inactive user. This sets the existing soft-delete fields, removes the account from the Users list, preserves all linked history and retains its Microsoft tenant/object identity. Archived accounts cannot sign in or be recreated by directory import. Archiving oneself or an active account is rejected. Role changes and archival are audited transactionally.
+
+Verification: `npm run test:user-roles` exercises persistence, union permissions, selectors, administrator isolation and archival in a temporary local database schema, removed afterwards. It refuses remote databases.

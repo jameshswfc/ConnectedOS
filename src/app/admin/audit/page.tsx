@@ -1,3 +1,4 @@
+import { hasRole } from "@/services/permissions/user-roles";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +13,7 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 export default async function AuditPage({ searchParams }: { searchParams?: SearchParams }) {
   const user = await requireAuthenticatedUser();
   const canReadAudit = user.permissionLevel === "administrator"
-    || user.role === "Business Operations"
+    || hasRole(user, "Business Operations")
     || await userHasPermission(user.id, "audit.read");
   if (!canReadAudit) {
     redirect("/403");

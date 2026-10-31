@@ -294,7 +294,7 @@ export async function addSupplierInvoice(context: CrmAccessContext, purchaseOrde
       isActive: true,
       deletedAt: null,
       deactivatedAt: null,
-      role: { name: "Finance" }
+      ...usersWithRoles(["Finance"])
     },
     select: { id: true }
   });
@@ -750,3 +750,4 @@ function ensurePurchaseOrderPageSpace(doc: PDFKit.PDFDocument, requiredHeight: n
   }
   return false;
 }
+import { usersWithRoles } from "@/services/permissions/user-roles";

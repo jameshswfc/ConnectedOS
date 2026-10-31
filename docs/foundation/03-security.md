@@ -150,3 +150,8 @@ Customer users must not be able to access:
 Future AI assistants must obey the same permission model as normal users.
 
 AI must not be allowed to access records a user could not access manually.
+# Combined Roles and Account Archival
+
+Sessions reload primary and additional business roles from the database. Deactivation or archival clears access on the next request. Additional business roles combine capabilities without bypassing record ownership, quote approval or administrator checks. Non-admin role combinations cannot acquire `admin.*` permissions. Administrator remains an explicit primary role/permission-level decision.
+
+Archive is available only to user administrators for inactive accounts. It does not delete business history or Microsoft identities and does not remove the person from Microsoft 365. The normal Users list excludes archived records, including when listing inactive accounts. Existing Microsoft sign-in and directory import protections continue to block archived identities.

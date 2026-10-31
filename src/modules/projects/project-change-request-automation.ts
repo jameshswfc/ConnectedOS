@@ -81,7 +81,7 @@ async function notifyChangeRequestCreated(projectId: string, projectNumber: stri
     });
   }
   const roleNames = projectManagerId ? ["Business Operations"] : ["Business Operations", "Administrator"];
-  const users = await prisma.user.findMany({ where: { isActive: true, deletedAt: null, role: { name: { in: roleNames } } } });
+  const users = await prisma.user.findMany({ where: { isActive: true, deletedAt: null, deactivatedAt: null, ...usersWithRoles(roleNames) } });
   await Promise.all(users.map((user) => createNotification({
     userId: user.id,
     title,
@@ -98,3 +98,4 @@ async function notifyChangeRequestCreated(projectId: string, projectNumber: stri
     actionHref: link
   }));
 }
+import { usersWithRoles } from "@/services/permissions/user-roles";

@@ -11,7 +11,9 @@ export async function getPresalesContext(): Promise<CrmAccessContext> {
   return {
     userId: user.id,
     permissions: user.permissions,
-    permissionLevel: user.permissionLevel
+    permissionLevel: user.permissionLevel,
+    role: user.role,
+    roles: user.roles
   };
 }
 

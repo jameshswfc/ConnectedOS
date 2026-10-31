@@ -532,3 +532,10 @@ Deferred:
 
 - Additional browser-automation coverage beyond the checklist and existing test suite.
 - Wider export redesign work beyond current branded export fixes already completed in prior sprints.
+# Multi-Role Assignment and User Archival
+
+- Additive `20261031223000_multiple_user_roles` migration adds additional role memberships while retaining primary-role compatibility.
+- Admin Users supports primary and additional business roles; session permissions, navigation, assignment selectors and role-based recipient lookups use all assigned roles.
+- Archive removes inactive users from normal administration lists while preserving records, audit history and blocked Microsoft identities.
+- No production test seed or reset is required for this deployment. Apply only the additive migration and separately reviewed user changes.
+- Validate with unit tests, lint, build, Prisma validation/status and `npm run test:user-roles` against a local database.

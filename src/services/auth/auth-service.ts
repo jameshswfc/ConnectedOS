@@ -9,6 +9,7 @@ export type AuthenticatedUser = {
   email?: string | null;
   image?: string | null;
   role?: string;
+  roles?: string[];
   permissionLevel?: string;
   mustChangePassword?: boolean;
   permissions: string[];

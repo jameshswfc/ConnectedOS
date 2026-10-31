@@ -1,3 +1,4 @@
+import { hasRole } from "@/services/permissions/user-roles";
 import { prisma } from "@/lib/prisma";
 import { activityVisibilityWhere, assertAnyCrmPermission, leadVisibilityWhere, opportunityVisibilityWhere } from "@/modules/crm/crm-permissions";
 import { salespersonActivityWhere, salespersonLeadWhere, salespersonOpportunityWhere } from "@/modules/crm/sales/salesperson-service";
@@ -15,7 +16,7 @@ export async function getCrmMyWork(context: CrmAccessContext, salespersonId?: st
     "crm.activity.read_own"
   ]);
 
-  const selectedOwnerId = salespersonId ?? (context.role === "Sales" ? context.userId : undefined);
+  const selectedOwnerId = salespersonId ?? (hasRole(context, "Sales") ? context.userId : undefined);
   const [leads, opportunities, activities, dueFollowUps, overdueFollowUps, quotes, presalesRequests] = await Promise.all([
     prisma.lead.findMany({
       where: { AND: [leadVisibilityWhere(context), salespersonLeadWhere(context, salespersonId)] },
@@ -57,7 +58,7 @@ export async function getCrmMyWork(context: CrmAccessContext, salespersonId?: st
       include: { account: true, lead: true, opportunity: true, owner: true },
       orderBy: { dueDate: "asc" }
     }),
-    listQuotes(context, { salespersonId, myQuotes: context.role === "Sales" || salespersonId === context.userId }),
+    listQuotes(context, { salespersonId, myQuotes: hasRole(context, "Sales") || salespersonId === context.userId }),
     listPresalesRequests(context, selectedOwnerId ? { salespersonId: selectedOwnerId } : {})
   ]);
 

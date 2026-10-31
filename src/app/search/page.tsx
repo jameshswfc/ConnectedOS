@@ -16,7 +16,8 @@ export default async function SearchPage({ searchParams }: { searchParams?: Sear
     userId: user.id,
     permissions: user.permissions,
     permissionLevel: user.permissionLevel,
-    role: user.role
+    role: user.role,
+    roles: user.roles
   }, q);
 
   const grouped = results.reduce<Record<string, typeof results>>((accumulator, item) => {

@@ -4,6 +4,7 @@ import { errorResponse } from "@/lib/api-response";
 import { requireAuthenticatedApiUser } from "@/services/auth/auth-service";
 import { apiAuthErrorResponse } from "@/services/auth/api-auth-error";
 import { assertUserPermission } from "@/services/permissions/permission-service";
+import { UserManagementValidationError } from "./user-service";
 
 export async function requireUserAdmin() {
   const user = await requireAuthenticatedApiUser();
@@ -16,6 +17,7 @@ export async function parseJsonBody<TSchema extends z.ZodTypeAny>(request: Reque
 }
 
 export function handleUserApiError(error: unknown) {
+  if (error instanceof UserManagementValidationError) return NextResponse.json(errorResponse("VALIDATION_ERROR", error.message), { status: 400 });
   const authResponse = apiAuthErrorResponse(error);
   if (authResponse) return authResponse;
   if (error instanceof ZodError) {

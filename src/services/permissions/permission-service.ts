@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { combinedRolePermissions, userAccessInclude } from "./user-roles";
 
 export function hasPermissionFromCodes(userPermissions: string[], requiredPermission: string) {
   return userPermissions.includes(requiredPermission);
@@ -7,7 +8,7 @@ export function hasPermissionFromCodes(userPermissions: string[], requiredPermis
 export async function getUserPermissions(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    include: { role: { include: { rolePermissions: { include: { permission: true } } } } }
+    include: userAccessInclude
   });
 
   if (!user || !user.isActive || user.deletedAt || user.deactivatedAt) return [];
@@ -15,7 +16,7 @@ export async function getUserPermissions(userId: string) {
     const permissions = await prisma.permission.findMany({ select: { code: true } });
     return permissions.map((permission) => permission.code);
   }
-  return user.role.rolePermissions.map((rolePermission) => rolePermission.permission.code);
+  return combinedRolePermissions(user);
 }
 
 export async function assertUserPermission(userId: string, requiredPermission: string) {

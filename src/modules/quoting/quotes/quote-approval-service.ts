@@ -419,13 +419,13 @@ async function notifyApprovers(quoteId: string, reason: string) {
   const approvers = await prisma.user.findMany({
     where: {
       isActive: true,
-      role: {
-        rolePermissions: {
-          some: {
-            permission: { code: "quotes.approve" }
-          }
-        }
-      }
+      deletedAt: null,
+      deactivatedAt: null,
+      OR: [
+        { permissionLevel: "administrator" },
+        { role: { rolePermissions: { some: { permission: { code: "quotes.approve" } } } } },
+        { userRoles: { some: { role: { rolePermissions: { some: { permission: { code: "quotes.approve" } } } } } } }
+      ]
     }
   });
   const link = `/quotes/${quote.id}`;

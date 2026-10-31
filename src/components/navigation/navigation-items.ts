@@ -43,16 +43,16 @@ export const navigationItems: NavigationItem[] = [
   { href: "/settings", label: "Settings", icon: Settings, alwaysVisible: true }
 ];
 
-export function visibleNavigationItems(userPermissions: string[] = [], permissionLevel?: string | null, roleName?: string | null) {
+export function visibleNavigationItems(userPermissions: string[] = [], permissionLevel?: string | null, roleName?: string | string[] | null) {
   return navigationItems.filter((item) => canViewNavigationItem(item, userPermissions, permissionLevel, roleName));
 }
 
-export function canViewNavigationItem(item: NavigationItem, userPermissions: string[] = [], permissionLevel?: string | null, roleName?: string | null) {
+export function canViewNavigationItem(item: NavigationItem, userPermissions: string[] = [], permissionLevel?: string | null, roleName?: string | string[] | null) {
   if (item.alwaysVisible || permissionLevel === "administrator" || userPermissions.includes("admin.users")) {
     return true;
   }
 
-  if (roleName && item.roles?.includes(roleName)) {
+  if ((Array.isArray(roleName) ? roleName : roleName ? [roleName] : []).some((name) => item.roles?.includes(name))) {
     return true;
   }
 
@@ -63,7 +63,7 @@ export function canViewNavigationItem(item: NavigationItem, userPermissions: str
   return Boolean(item.matchAnyPrefix?.some((prefix) => userPermissions.some((permission) => permission.startsWith(prefix))));
 }
 
-export function canAccessNavigationPath(path: string, userPermissions: string[] = [], permissionLevel?: string | null, roleName?: string | null) {
+export function canAccessNavigationPath(path: string, userPermissions: string[] = [], permissionLevel?: string | null, roleName?: string | string[] | null) {
   const item = navigationItems.find((navigationItem) => navigationItem.href === path);
   return item ? canViewNavigationItem(item, userPermissions, permissionLevel, roleName) : false;
 }

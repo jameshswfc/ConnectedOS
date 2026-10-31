@@ -206,7 +206,7 @@ async function resolveLeaveApprovers(requestUserId: string) {
       isActive: true,
       deletedAt: null,
       deactivatedAt: null,
-      role: { name: "Business Operations" }
+      ...usersWithRoles(["Business Operations"])
     },
     select: { id: true, displayName: true, email: true }
   });
@@ -232,3 +232,4 @@ async function runLeaveSideEffects(effects: Array<Promise<unknown> | null>) {
     }
   }
 }
+import { usersWithRoles } from "@/services/permissions/user-roles";

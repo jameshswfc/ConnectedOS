@@ -34,4 +34,12 @@ describe("session access refresh", () => {
     const session = await sessionCallback({ token, session: { user: { name: "Former user" }, expires: "later" } } as Parameters<typeof sessionCallback>[0]);
     expect(session.user).toBeUndefined();
   });
+  it("refreshes all assigned roles and combines their permissions", async () => {
+    mocks.findFirst.mockResolvedValue({ id: "member", isActive: true, permissionLevel: "user", role: { name: "Sales", rolePermissions: [{ permission: { code: "crm.account.read_all" } }] }, userRoles: [{ role: { name: "Project Manager", rolePermissions: [{ permission: { code: "projects.manage_tasks" } }] } }] });
+    expect(await refresh({ userId: "member", authProvider: "azure-ad" })).toMatchObject({ roles: ["Sales", "Project Manager"], permissions: ["crm.account.read_all", "projects.manage_tasks"] });
+  });
+  it("clears stale combined roles when an account is archived", async () => {
+    mocks.findFirst.mockResolvedValue({ id: "member", isActive: true, deletedAt: new Date() });
+    expect(await refresh({ userId: "member", roles: ["Administrator"], permissions: ["admin.users"] })).toMatchObject({ userId: undefined, roles: [], permissions: [] });
+  });
 });

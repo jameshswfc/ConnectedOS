@@ -1,3 +1,4 @@
+import { hasRole } from "@/services/permissions/user-roles";
 import type { Prisma } from "@prisma/client";
 import type { CrmAccessContext } from "@/modules/crm/types/crm-context";
 
@@ -16,9 +17,9 @@ export function canReadAllProjects(context: CrmAccessContext) {
 }
 
 export function canManageProject(context: CrmAccessContext, project: ProjectAccessShape) {
-  if (hasProjectAdmin(context) || context.role === "Business Operations") return true;
+  if (hasProjectAdmin(context) || hasRole(context, "Business Operations")) return true;
   if (context.permissions.includes("projects.update")) {
-    if (context.role === "Project Manager") return project.projectManagerId === context.userId;
+    if (hasRole(context, "Project Manager")) return project.projectManagerId === context.userId;
     return true;
   }
   return project.projectManagerId === context.userId || project.tasks?.some((task) => task.assignedToId === context.userId || task.ownerId === context.userId) || project.resourceAssignments?.some((resource) => resource.userId === context.userId);

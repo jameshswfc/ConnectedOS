@@ -10,7 +10,7 @@ import { visibleNavigationItems } from "@/components/navigation/navigation-items
 import { groupNavigationItems, navigationItemActive } from "@/components/navigation/navigation-groups";
 import { Menu } from "lucide-react";
 
-export function Sidebar({ userPermissions = [], permissionLevel, roleName }: { userPermissions?: string[]; permissionLevel?: string | null; roleName?: string | null }) {
+export function Sidebar({ userPermissions = [], permissionLevel, roleName }: { userPermissions?: string[]; permissionLevel?: string | null; roleName?: string | string[] | null }) {
   const pathname = usePathname();
   const mobileMenu = useRef<HTMLDetailsElement>(null);
   const navigationItems = visibleNavigationItems(userPermissions, permissionLevel, roleName);

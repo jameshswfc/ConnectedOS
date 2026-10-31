@@ -663,6 +663,7 @@ model User {
   deletedById   String?  @map("deleted_by_id") @db.Uuid
 
   role          Role     @relation(fields: [roleId], references: [id])
+  userRoles     UserRole[]
   auditLogs     AuditLog[]
   notifications Notification[]
   comments      Comment[]
@@ -731,9 +732,22 @@ model Role {
   updatedAt       DateTime @updatedAt @map("updated_at")
 
   users           User[]
+  userRoles       UserRole[]
   rolePermissions RolePermission[]
 
   @@map("roles")
+}
+
+model UserRole {
+  userId    String @map("user_id") @db.Uuid
+  roleId    String @map("role_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@id([userId, roleId])
+  @@index([roleId])
+  @@map("user_roles")
 }
 
 model Permission {

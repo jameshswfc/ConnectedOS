@@ -1,3 +1,4 @@
+import { hasRole } from "@/services/permissions/user-roles";
 import { BookingConflictStatus, LeaveStatus, ResourceBookingStatus, ResourceBookingType, ResourceType, type Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { CrmAccessContext } from "@/modules/crm/types/crm-context";
@@ -847,8 +848,8 @@ function bookingVisibilityWhere(context: CrmAccessContext): Prisma.ResourceBooki
 
 function canOverrideBookingConflict(context: CrmAccessContext) {
   return isAdminContext(context)
-    || context.role === "Business Operations"
-    || context.role === "Project Manager"
+    || hasRole(context, "Business Operations")
+    || hasRole(context, "Project Manager")
     || context.permissions.includes("field_services.override_conflict")
     || context.permissions.includes("schedule.override_conflict");
 }

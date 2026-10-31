@@ -1,3 +1,4 @@
+import { hasRole } from "@/services/permissions/user-roles";
 import type { Prisma } from "@prisma/client";
 import type { CrmAccessContext } from "@/modules/crm/types/crm-context";
 
@@ -15,7 +16,7 @@ export function assertAnyQuotePermission(context: CrmAccessContext, permissions:
 }
 
 export function quoteVisibilityWhere(context: CrmAccessContext): Prisma.QuoteWhereInput {
-  if (context.role === "Sales") {
+  if (hasRole(context, "Sales") && !["Business Operations", "Pre-Sales", "Administrator"].some((name) => hasRole(context, name)) && context.permissionLevel !== "administrator") {
     return { deletedAt: null, ownerId: context.userId };
   }
 

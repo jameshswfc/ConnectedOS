@@ -3,4 +3,5 @@ export type CrmAccessContext = {
   permissions: string[];
   permissionLevel?: string;
   role?: string;
+  roles?: string[];
 };

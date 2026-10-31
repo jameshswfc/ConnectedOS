@@ -602,7 +602,7 @@ export async function getPresalesMyWork(context: CrmAccessContext) {
 
 export async function listPresalesEngineers() {
   return prisma.user.findMany({
-    where: { isActive: true, deletedAt: null, role: { name: { in: ["Pre-Sales", "Pre-Sales Engineer", "Pre-Sales Manager", "Administrator", "System Administrator", "Director"] } } },
+    where: { isActive: true, deletedAt: null, deactivatedAt: null, ...usersWithRoles(["Pre-Sales", "Pre-Sales Engineer", "Pre-Sales Manager", "Administrator", "System Administrator", "Director"]) },
     orderBy: { displayName: "asc" }
   });
 }
@@ -817,7 +817,7 @@ async function notifyUsers(userIds: string[], title: string, body: string, reque
 }
 
 async function recipientIds(roleNames: string[], directUserIds: string[] = []) {
-  const roleUsers = await prisma.user.findMany({ where: { isActive: true, deletedAt: null, role: { name: { in: roleNames } } }, select: { id: true } });
+  const roleUsers = await prisma.user.findMany({ where: { isActive: true, deletedAt: null, deactivatedAt: null, ...usersWithRoles(roleNames) }, select: { id: true } });
   return [...new Set([...directUserIds, ...roleUsers.map((user) => user.id)])];
 }
 
@@ -881,3 +881,4 @@ function safeSharePointTargetPath(sharePointFolderUrl: string | null, requestNum
     return sharePointFolderUrl ? `${sharePointFolderUrl.replace(/\/+$/, "")}/${fileName}` : fileName;
   }
 }
+import { usersWithRoles } from "@/services/permissions/user-roles";

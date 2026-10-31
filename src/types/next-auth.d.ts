@@ -9,6 +9,7 @@ declare module "next-auth" {
       email?: string | null;
       image?: string | null;
       role?: string;
+      roles?: string[];
       permissionLevel?: string;
       permissions: string[];
       mustChangePassword?: boolean;
@@ -21,6 +22,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     userId?: string;
     role?: string;
+    roles?: string[];
     permissionLevel?: string;
     permissions?: string[];
     mustChangePassword?: boolean;

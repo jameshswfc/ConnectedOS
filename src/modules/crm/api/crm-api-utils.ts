@@ -11,7 +11,8 @@ export async function getCrmContext(): Promise<CrmAccessContext> {
     userId: user.id,
     permissions: user.permissions,
     permissionLevel: user.permissionLevel,
-    role: user.role
+    role: user.role,
+    roles: user.roles
   };
 }
 

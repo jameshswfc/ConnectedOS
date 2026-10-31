@@ -1,3 +1,4 @@
+import { hasRole, usersWithRoles } from "@/services/permissions/user-roles";
 import {
   OpportunityStage,
   OpportunityStatus,
@@ -776,11 +777,11 @@ export async function createProjectFinancialEntry(context: CrmAccessContext, pro
 }
 
 function canUserEditProjectBudget(context: CrmAccessContext, project: { projectManagerId?: string | null }) {
-  return context.permissionLevel === "administrator" || context.role === "Business Operations" || context.permissions.includes("admin.users") || project.projectManagerId === context.userId;
+  return context.permissionLevel === "administrator" || hasRole(context, "Business Operations") || context.permissions.includes("admin.users") || project.projectManagerId === context.userId;
 }
 
 function canEditProjectBaseline(context: CrmAccessContext) {
-  return context.permissionLevel === "administrator" || context.role === "Business Operations" || context.permissions.includes("admin.users");
+  return context.permissionLevel === "administrator" || hasRole(context, "Business Operations") || context.permissions.includes("admin.users");
 }
 
 export async function updateProjectIssueAction(context: CrmAccessContext, itemId: string, input: ProjectIssueActionUpdateInput) {
@@ -1215,7 +1216,7 @@ export async function listProjectTaskTemplates(context: CrmAccessContext) {
 }
 
 export async function createProjectTaskTemplate(context: CrmAccessContext, input: { name: string; projectType: string; isActive: boolean; items: { title: string; description?: string | null; defaultOwnerRole?: ProjectResourceRole | null; offsetDaysFromStart: number; defaultDurationDays: number; sortOrder: number }[] }) {
-  if (!(context.permissionLevel === "administrator" || context.role === "Business Operations" || context.permissions.includes("admin.users"))) throw new Error("Missing permission: projects.update");
+  if (!(context.permissionLevel === "administrator" || hasRole(context, "Business Operations") || context.permissions.includes("admin.users"))) throw new Error("Missing permission: projects.update");
   return prisma.projectTaskTemplate.create({
     data: {
       name: input.name,
@@ -1228,11 +1229,11 @@ export async function createProjectTaskTemplate(context: CrmAccessContext, input
 }
 
 export async function listProjectManagers() {
-  return prisma.user.findMany({ where: { isActive: true, deletedAt: null, deactivatedAt: null, role: { name: "Project Manager" } }, orderBy: { displayName: "asc" } });
+  return prisma.user.findMany({ where: { isActive: true, deletedAt: null, deactivatedAt: null, ...usersWithRoles(["Project Manager"]) }, orderBy: { displayName: "asc" } });
 }
 
 export async function listProjectUsers() {
-  return prisma.user.findMany({ where: { isActive: true, deletedAt: null, deactivatedAt: null, role: { name: { in: ["Project Manager", "Project Engineer", "Field Engineer", "Business Operations", "Pre-Sales", "Pre-Sales Engineer", "Administrator"] } } }, orderBy: { displayName: "asc" } });
+  return prisma.user.findMany({ where: { isActive: true, deletedAt: null, deactivatedAt: null, ...usersWithRoles(["Project Manager", "Project Engineer", "Field Engineer", "Business Operations", "Pre-Sales", "Pre-Sales Engineer", "Administrator"]) }, orderBy: { displayName: "asc" } });
 }
 
 export async function listProjectResources(context: CrmAccessContext) {
@@ -1569,7 +1570,7 @@ async function notifyProjectChangeRequestDecision(projectId: string, projectMana
   const link = `/projects/${projectId}#change-requests`;
   const userIds = new Set<string>();
   if (projectManagerId) userIds.add(projectManagerId);
-  const businessUsers = await prisma.user.findMany({ where: { isActive: true, deletedAt: null, role: { name: "Business Operations" } }, select: { id: true } });
+  const businessUsers = await prisma.user.findMany({ where: { isActive: true, deletedAt: null, deactivatedAt: null, ...usersWithRoles(["Business Operations"]) }, select: { id: true } });
   businessUsers.forEach((user) => userIds.add(user.id));
   await Promise.all([...userIds].map((userId) => createNotification({ userId, title, body, metadata: { module: "projects", link } })));
   await sendTemplatedEmailToUserIds(userIds, () => ({

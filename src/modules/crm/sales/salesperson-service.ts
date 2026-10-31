@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { assignedRoleNames, hasRole, usersWithRoles } from "@/services/permissions/user-roles";
 import type { CrmAccessContext } from "@/modules/crm/types/crm-context";
 
 export const salesRoleName = "Sales";
@@ -20,6 +21,7 @@ type SalesUserLike = {
   deletedAt?: Date | null;
   deactivatedAt?: Date | null;
   role?: { name: string } | null;
+  userRoles?: { role: { name: string } }[];
 };
 
 export function isActiveSalesUser(user: SalesUserLike) {
@@ -27,8 +29,7 @@ export function isActiveSalesUser(user: SalesUserLike) {
     user.isActive
     && !user.deletedAt
     && !user.deactivatedAt
-    && user.role?.name
-    && salespersonAssignableRoleNames.includes(user.role.name as (typeof salespersonAssignableRoleNames)[number])
+    && assignedRoleNames(user).some((name) => salespersonAssignableRoleNames.includes(name as (typeof salespersonAssignableRoleNames)[number]))
   );
 }
 
@@ -50,7 +51,7 @@ export async function getActiveSalesUsers(): Promise<SalespersonOption[]> {
       isActive: true,
       deletedAt: null,
       deactivatedAt: null,
-      role: { name: { in: [...salespersonAssignableRoleNames] } }
+      ...usersWithRoles(salespersonAssignableRoleNames)
     },
     select: {
       id: true,
@@ -67,12 +68,12 @@ export function canSelectSalesperson(context: CrmAccessContext) {
   return (
     context.permissionLevel === "administrator" ||
     context.permissions.includes("admin.users") ||
-    salespersonSelectorRoles.includes(context.role as (typeof salespersonSelectorRoles)[number])
+    salespersonSelectorRoles.some((name) => hasRole(context, name))
   );
 }
 
 export function isSalesRoleUser(context: CrmAccessContext) {
-  return context.role === salesRoleName;
+  return hasRole(context, salesRoleName);
 }
 
 export function resolveSalespersonScope(context: CrmAccessContext, requestedSalespersonId?: string | null) {

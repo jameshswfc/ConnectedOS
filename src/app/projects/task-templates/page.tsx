@@ -1,3 +1,4 @@
+import { hasRole } from "@/services/permissions/user-roles";
 import { AccessDenied } from "@/components/auth/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +11,7 @@ export default async function ProjectTaskTemplatesPage() {
   const { context, userName } = await getCrmPageContext();
   let templates: Awaited<ReturnType<typeof listProjectTaskTemplates>> | null = null;
   try {
-    if (!(context.permissionLevel === "administrator" || context.role === "Business Operations" || context.permissions.includes("admin.users"))) throw new Error("Missing permission: project template administration");
+    if (!(context.permissionLevel === "administrator" || hasRole(context, "Business Operations") || context.permissions.includes("admin.users"))) throw new Error("Missing permission: project template administration");
     templates = await listProjectTaskTemplates(context);
   } catch (error) {
     if (error instanceof Error && error.message.startsWith("Missing permission")) templates = null;

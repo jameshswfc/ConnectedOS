@@ -1,3 +1,4 @@
+import { hasRole } from "@/services/permissions/user-roles";
 import { AccessDenied } from "@/components/auth/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { prisma } from "@/lib/prisma";
@@ -28,8 +29,8 @@ export default async function NewPurchaseOrderPage({ searchParams }: { searchPar
     }),
     prisma.quote.findMany({
       where: context.permissionLevel === "administrator"
-        || context.role === "Business Operations"
-        || context.role === "Finance"
+        || hasRole(context, "Business Operations")
+        || hasRole(context, "Finance")
         || context.permissions.includes("quotes.read_all")
         ? { deletedAt: null }
         : {

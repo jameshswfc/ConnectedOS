@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { friendlyActionError } from "@/lib/client-action-errors";
 
-export function AccountSettingsForms({ user, passwordOnly = false, redirectAfterPasswordChange }: { user: { displayName: string; email: string; role?: { name: string }; permissionLevel: string; hasLocalPassword?: boolean }; passwordOnly?: boolean; redirectAfterPasswordChange?: string }) {
+export function AccountSettingsForms({ user, passwordOnly = false, redirectAfterPasswordChange }: { user: { displayName: string; email: string; role?: { name: string }; additionalRoles?: { name: string }[]; permissionLevel: string; hasLocalPassword?: boolean }; passwordOnly?: boolean; redirectAfterPasswordChange?: string }) {
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
 
@@ -46,7 +46,7 @@ export function AccountSettingsForms({ user, passwordOnly = false, redirectAfter
           <label className="block text-sm font-medium text-slate-700">Name<input name="name" required defaultValue={user.displayName} className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-sm" /></label>
           <label className="block text-sm font-medium text-slate-700">Email<input value={user.email} readOnly className="mt-1 h-10 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm text-slate-600" /></label>
           <div className="grid gap-3 md:grid-cols-2">
-            <p className="text-sm text-slate-600">Role: <span className="font-medium text-slate-900">{user.role?.name ?? "-"}</span></p>
+            <p className="text-sm text-slate-600">Roles: <span className="font-medium text-slate-900">{[user.role?.name, ...(user.additionalRoles ?? []).map((role) => role.name)].filter(Boolean).join(", ") || "-"}</span></p>
             <p className="text-sm text-slate-600">Permission level: <span className="font-medium text-slate-900">{formatPermissionLevel(user.permissionLevel)}</span></p>
           </div>
           <Button type="submit">Save Profile</Button>

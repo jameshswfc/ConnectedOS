@@ -2,6 +2,7 @@ import type { NextAuthOptions } from "next-auth";
 import AzureADProvider from "next-auth/providers/azure-ad";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
+import { assignedRoleNames, combinedRolePermissions, userAccessInclude } from "@/services/permissions/user-roles";
 import { authorizeLocalCredentials } from "@/services/auth/local-login-service";
 import { permissionCodesForLevel } from "@/services/users/user-service";
 import { isMicrosoftLoginEnabled, MicrosoftLoginError, signInMicrosoftUser } from "@/services/auth/microsoft-login-service";
@@ -93,32 +94,23 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account }) {
       if (account) token.authProvider = account.provider;
       const userId = typeof user?.id === "string" ? user.id : typeof token.userId === "string" ? token.userId : undefined;
-      if (!userId) return { ...token, userId: undefined, role: undefined, permissionLevel: undefined, permissions: [], mustChangePassword: false };
+      if (!userId) return { ...token, userId: undefined, role: undefined, roles: [], permissionLevel: undefined, permissions: [], mustChangePassword: false };
       const dbUser = await prisma.user.findFirst({
         where: { id: userId },
-        include: {
-          role: {
-            include: {
-              rolePermissions: {
-                include: {
-                  permission: true
-                }
-              }
-            }
-          }
-        }
+        include: userAccessInclude
       });
 
       if (!dbUser || !dbUser.isActive || dbUser.deletedAt || dbUser.deactivatedAt) {
-        return { ...token, userId: undefined, role: undefined, permissionLevel: undefined, permissions: [], mustChangePassword: false };
+        return { ...token, userId: undefined, role: undefined, roles: [], permissionLevel: undefined, permissions: [], mustChangePassword: false };
       }
 
       const allPermissions = await prisma.permission.findMany({ select: { code: true } });
-      const rolePermissions = dbUser.role.rolePermissions.map((rolePermission) => rolePermission.permission.code);
+      const rolePermissions = combinedRolePermissions(dbUser);
       token.userId = dbUser.id;
       token.name = dbUser.displayName;
       token.email = dbUser.email;
       token.role = dbUser.role.name;
+      token.roles = assignedRoleNames(dbUser);
       token.permissionLevel = dbUser.permissionLevel;
       token.mustChangePassword = token.authProvider !== "azure-ad" && dbUser.mustChangePassword;
       token.permissions = permissionCodesForLevel(dbUser.permissionLevel, rolePermissions, allPermissions.map((permission) => permission.code));
@@ -132,6 +124,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.userId as string | undefined;
         session.user.role = token.role as string | undefined;
+        session.user.roles = token.roles ?? [];
         session.user.permissionLevel = token.permissionLevel as string | undefined;
         session.user.mustChangePassword = Boolean(token.mustChangePassword);
         session.user.permissions = (token.permissions as string[] | undefined) ?? [];

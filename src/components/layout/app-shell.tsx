@@ -20,7 +20,7 @@ export async function AppShell({ children, title, userName }: AppShellProps) {
   const displayName = userName ?? session?.user?.name ?? "Signed in";
   const permissions = session?.user?.permissions ?? [];
   const permissionLevel = session?.user?.permissionLevel;
-  const roleName = session?.user?.role;
+  const roleName = session?.user?.roles ?? session?.user?.role;
   const [unreadNotifications, notifications] = session?.user?.id
     ? await Promise.all([countUnreadNotificationsForUser(session.user.id), listNotificationsForUser(session.user.id)])
     : [0, []];

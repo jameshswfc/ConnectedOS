@@ -12,6 +12,7 @@ type UserRow = {
   email: string;
   roleId: string;
   role?: { id: string; name: string };
+  additionalRoles?: RoleOption[];
   permissionLevel: PermissionLevel;
   isActive: boolean;
   mustChangePassword: boolean;
@@ -25,6 +26,8 @@ export function AdminUserManagement({ users, roles, microsoftEnabled = false }: 
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
   const [linking, setLinking] = useState<string | null>(null);
+  const [saving, setSaving] = useState<string | null>(null);
+  const [archiving, setArchiving] = useState<string | null>(null);
 
   async function linkMicrosoft(userId: string, formData: FormData) {
     if (linking) return;
@@ -50,6 +53,7 @@ export function AdminUserManagement({ users, roles, microsoftEnabled = false }: 
         name: formData.get("name"),
         email: formData.get("email"),
         roleId: formData.get("roleId"),
+        additionalRoleIds: formData.getAll("additionalRoleIds"),
         permissionLevel: formData.get("permissionLevel"),
         isActive: formData.get("isActive") === "on",
         password: formData.get("password"),
@@ -61,7 +65,10 @@ export function AdminUserManagement({ users, roles, microsoftEnabled = false }: 
   }
 
   async function updateUser(userId: string, formData: FormData) {
+    if (saving) return;
+    setSaving(userId);
     setMessage(null);
+    try {
     const response = await fetch(`/api/v1/users/${userId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -69,12 +76,26 @@ export function AdminUserManagement({ users, roles, microsoftEnabled = false }: 
         name: formData.get("name"),
         email: formData.get("email"),
         roleId: formData.get("roleId"),
+        additionalRoleIds: formData.getAll("additionalRoleIds"),
         permissionLevel: formData.get("permissionLevel"),
         isActive: formData.get("isActive") === "on"
       })
     });
     setMessage(response.ok ? "User updated." : await friendlyActionError(response, "User could not be updated."));
     if (response.ok) router.refresh();
+    } catch { setMessage("Unable to save user roles. Please try again."); }
+    finally { setSaving(null); }
+  }
+
+  async function archiveUser(userId: string) {
+    if (saving) return;
+    setSaving(userId);
+    try {
+      const response = await fetch(`/api/v1/users/${userId}/archive`, { method: "POST" });
+      setMessage(response.ok ? "User archived. Access remains blocked and history is preserved." : await friendlyActionError(response, "Unable to archive user."));
+      if (response.ok) { setArchiving(null); router.refresh(); }
+    } catch { setMessage("Unable to archive user. Please try again."); }
+    finally { setSaving(null); }
   }
 
   async function resetPassword(userId: string, formData: FormData) {
@@ -128,10 +149,10 @@ export function AdminUserManagement({ users, roles, microsoftEnabled = false }: 
             <form action={(formData) => updateUser(user.id, formData)} className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
               <input name="name" required defaultValue={user.displayName} className="h-10 rounded-md border border-slate-300 px-3 text-sm" />
               <input name="email" type="email" required defaultValue={user.email} className="h-10 rounded-md border border-slate-300 px-3 text-sm" />
-              <RoleSelect roles={roles} defaultValue={user.roleId} />
+              <RoleSelect key={`${user.roleId}:${user.additionalRoles?.map((role) => role.id).join(",")}`} roles={roles} defaultValue={user.roleId} additionalRoles={user.additionalRoles} />
               <PermissionLevelSelect defaultValue={user.permissionLevel} />
               <label className="flex items-center gap-2 text-sm text-slate-700"><input name="isActive" type="checkbox" defaultChecked={user.isActive} /> Active</label>
-              <Button type="submit" variant="secondary">Save</Button>
+              <Button type="submit" variant="secondary" disabled={saving !== null}>{saving === user.id ? "Saving..." : "Save"}</Button>
             </form>
             <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
               <div className="text-sm text-slate-600 xl:col-span-2">Last login: {formatDate(user.lastLoginAt)} · Status: {user.isActive ? "Active" : "Inactive"}</div>
@@ -141,7 +162,12 @@ export function AdminUserManagement({ users, roles, microsoftEnabled = false }: 
                 <Button type="submit" variant="secondary">Reset Password</Button>
               </form>
               <Button type="button" variant="ghost" disabled={!user.isActive} onClick={() => deactivateUser(user.id)}>Deactivate</Button>
+              {!user.isActive ? <Button type="button" variant="secondary" onClick={() => setArchiving(user.id)}>Archive User</Button> : null}
             </div>
+            {archiving === user.id ? <div role="dialog" aria-label={`Archive ${user.displayName}`} className="mt-3 space-y-3 border-t border-slate-200 pt-3">
+              <p className="text-sm text-slate-700">Archive {user.displayName}? Their account will disappear from this list. Sign-in stays blocked and historical records are retained.</p>
+              <div className="flex gap-2"><Button type="button" variant="secondary" disabled={saving !== null} onClick={() => setArchiving(null)}>Cancel</Button><Button type="button" disabled={saving !== null} onClick={() => archiveUser(user.id)}>Confirm Archive</Button></div>
+            </div> : null}
           </div>
         ))}
       </div>
@@ -149,12 +175,27 @@ export function AdminUserManagement({ users, roles, microsoftEnabled = false }: 
   );
 }
 
-function RoleSelect({ roles, defaultValue }: { roles: RoleOption[]; defaultValue?: string }) {
+function RoleSelect({ roles, defaultValue, additionalRoles = [] }: { roles: RoleOption[]; defaultValue?: string; additionalRoles?: RoleOption[] }) {
+  const [primary, setPrimary] = useState(defaultValue ?? "");
+  const [selected, setSelected] = useState(additionalRoles.map((role) => role.id));
+  const basic = !primary || roles.find((role) => role.id === primary)?.name === "Staff";
   return (
-    <select name="roleId" required defaultValue={defaultValue ?? ""} className="h-10 rounded-md border border-slate-300 px-3 text-sm">
+    <div className="min-w-0 space-y-2">
+    <select name="roleId" aria-label="Primary role" required value={primary} onChange={(event) => {
+      const id = event.target.value;
+      setPrimary(id);
+      setSelected(roles.find((role) => role.id === id)?.name === "Staff" ? [] : selected.filter((value) => value !== id));
+    }} className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm">
       <option value="">Select role</option>
       {roles.map((role) => <option key={role.id} value={role.id}>{role.name}</option>)}
     </select>
+    <details><summary className="cursor-pointer text-sm text-brand-700">Additional roles{selected.length ? ` (${selected.length})` : ""}</summary>
+      <fieldset disabled={basic} className="mt-2 space-y-2"><legend className="sr-only">Additional business roles</legend>
+        {roles.filter((role) => !["Staff", "Administrator"].includes(role.name) && role.id !== primary).map((role) => <label key={role.id} className="flex items-start gap-2 text-sm text-slate-700">
+          <input name="additionalRoleIds" type="checkbox" value={role.id} checked={selected.includes(role.id)} onChange={(event) => setSelected(event.target.checked ? [...selected, role.id] : selected.filter((id) => id !== role.id))} className="mt-1" />{role.name}
+        </label>)}
+      </fieldset>
+    </details></div>
   );
 }
 

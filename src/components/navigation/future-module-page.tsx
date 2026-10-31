@@ -7,7 +7,7 @@ import { requireAuthenticatedUser } from "@/services/auth/auth-service";
 export async function FutureModulePage({ title, path }: { title: string; path: string }) {
   const user = await requireAuthenticatedUser();
 
-  if (!canAccessNavigationPath(path, user.permissions, user.permissionLevel, user.role)) {
+  if (!canAccessNavigationPath(path, user.permissions, user.permissionLevel, user.roles ?? user.role)) {
     return (
       <AppShell title={title} userName={user.name}>
         <AccessDenied />

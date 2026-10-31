@@ -14,7 +14,8 @@ export default async function DashboardPage() {
     userId: user.id,
     permissions: user.permissions,
     permissionLevel: user.permissionLevel,
-    role: user.role
+    role: user.role,
+    roles: user.roles
   });
 
   return (
@@ -41,7 +42,7 @@ export default async function DashboardPage() {
       <div className="mb-4 flex flex-wrap gap-2">
         <Link href="/settings"><Button variant="secondary">Settings</Button></Link>
         <Link href="/notifications"><Button variant="secondary">Notifications</Button></Link>
-        {canAccessNavigationPath("/reports", user.permissions, user.permissionLevel, user.role) ? <Link href="/reports"><Button variant="secondary">Reports</Button></Link> : null}
+        {canAccessNavigationPath("/reports", user.permissions, user.permissionLevel, user.roles ?? user.role) ? <Link href="/reports"><Button variant="secondary">Reports</Button></Link> : null}
       </div>
       <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-4">
         {cards.map((card) => (
