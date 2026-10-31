@@ -1,5 +1,21 @@
 # Production Release: 31 October 2026
 
+## Latest Update: Combined Roles and User Archival
+
+This update supersedes the active-release location and user counts below; the original launch record remains for history.
+
+- Application commits: `28224a5` (combined roles and archive) and `1dc0e18` (consistent UK last-login timestamps).
+- Active release: `/opt/connectedos-releases/20261031-roles-final`, PM2 `connectedos`, port 3002. Immediate rollback release: `/opt/connectedos-releases/20261031-roles` (same role/archive support, before the timestamp correction).
+- Private pre-change database/configuration/PM2 backup: `/opt/connectedos-backups/20261031-roles`. Database dump verified with `pg_restore --list`; reviewed prior role/archive values retained privately. No seed, reset or cleanup was run.
+- Additive migration `20261031223000_multiple_user_roles` applied locally and in production; all 27 migrations current. The existing server-specific historical migration file was preserved.
+- Nine explicitly reviewed role configurations applied through audited user services. Non-administrators retain normal User permission level and no `admin.*` permissions. Two other active accounts were left unchanged.
+- Six already inactive accounts archived, leaving 11 users in the normal list. Historical records, immutable Microsoft links and blocked access retained. No Microsoft directory account was deleted.
+- Validation: 451 tests across 92 files; lint, local and production build, Prisma validation/status; isolated local multi-role/archive persistence check; isolated lead-to-project journey check.
+- Candidate Microsoft/local provider checks and JSON 401 checks passed before activation. Live administrator session continued working. Browser verification showed exactly 11 retained users, correct combined-role selections and no new console errors after the timestamp fix.
+- Temporary deployment key removed from the VPS, a subsequent SSH attempt was rejected, and the local private key was removed. No firewall changes.
+
+For rollback, keep the additive table and user data; switch PM2 to the immediate rollback release. Do not restore the database simply to roll back application code, as that would discard subsequent business activity. Reviewed personnel details are not stored in this public repository.
+
 ## Release
 
 Application commit: `bb94846` (Microsoft tenant-member sign-in, connected sales journey and grouped navigation).
