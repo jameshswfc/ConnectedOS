@@ -1,21 +1,31 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { createAuditLog } from "@/services/audit/audit-service";
-import { accountVisibilityWhere, activityVisibilityWhere, assertAnyCrmPermission, assertCanEditOwnedCrmRecord, assertCrmPermission } from "@/modules/crm/crm-permissions";
+import { accountVisibilityWhere, activityVisibilityWhere, contactVisibilityWhere, opportunityVisibilityWhere, assertAnyCrmPermission, assertCanEditOwnedCrmRecord, assertCrmPermission } from "@/modules/crm/crm-permissions";
 import { presalesVisibilityWhere } from "@/modules/presales/presales-permissions";
+import { quoteVisibilityWhere } from "@/modules/quoting/quotes/quote-permissions";
+import { projectVisibilityWhere } from "@/modules/projects/project-permissions";
 import type { AccountCreateInput, AccountUpdateInput } from "@/modules/crm/schemas/crm-schemas";
 import type { CrmAccessContext } from "@/modules/crm/types/crm-context";
 
-const accountInclude = {
-  owner: true,
+// Account access never grants implicit access to linked modules or their counts.
+function permitted<T>(predicate: () => T): T | { id: { in: string[] } } {
+  try { return predicate(); }
+  catch (error) {
+    if (error instanceof Error && error.message.startsWith("Missing permission")) return { id: { in: [] } };
+    throw error;
+  }
+}
+const accountInclude = (context: CrmAccessContext) => ({
+  owner: { select: { id: true, displayName: true, email: true } },
   _count: {
     select: {
-      contacts: true,
-      opportunities: true,
-      salesActivities: true
+      contacts: { where: permitted(() => contactVisibilityWhere(context)) },
+      opportunities: { where: permitted(() => opportunityVisibilityWhere(context)) },
+      salesActivities: { where: permitted(() => activityVisibilityWhere(context)) }
     }
   }
-} satisfies Prisma.AccountInclude;
+} satisfies Prisma.AccountInclude);
 
 export async function listAccounts(context: CrmAccessContext, search?: string) {
   const visibility = accountVisibilityWhere(context);
@@ -34,7 +44,7 @@ export async function listAccounts(context: CrmAccessContext, search?: string) {
           : {}
       ]
     },
-    include: accountInclude,
+    include: accountInclude(context),
     orderBy: { name: "asc" }
   });
 }
@@ -43,24 +53,24 @@ export async function getAccount(context: CrmAccessContext, id: string) {
   const account = await prisma.account.findFirst({
     where: { AND: [accountVisibilityWhere(context), { id }] },
     include: {
-      ...accountInclude,
-      contacts: { where: { deletedAt: null }, orderBy: [{ isPrimary: "desc" }, { lastName: "asc" }] },
-      opportunities: { where: { deletedAt: null, status: "open" }, orderBy: { updatedAt: "desc" } },
+      ...accountInclude(context),
+      contacts: { where: permitted(() => contactVisibilityWhere(context)), orderBy: [{ isPrimary: "desc" }, { lastName: "asc" }] },
+      opportunities: { where: { AND: [permitted(() => opportunityVisibilityWhere(context)), { status: "open" }] }, orderBy: { updatedAt: "desc" } },
       quotes: {
-        where: { deletedAt: null },
+        where: permitted(() => quoteVisibilityWhere(context)),
         include: {
-          versions: { orderBy: { versionNumber: "desc" }, take: 1 },
-          approvalRequests: { orderBy: { requestedAt: "desc" }, take: 1 }
+          versions: { select: { versionNumber: true }, orderBy: { versionNumber: "desc" }, take: 1 },
+          approvalRequests: { select: { status: true }, orderBy: { requestedAt: "desc" }, take: 1 }
         },
         orderBy: { updatedAt: "desc" }
       },
       salesActivities: {
-        where: activityVisibilityWhere(context),
-        include: { contact: true, lead: true, opportunity: true },
+        where: permitted(() => activityVisibilityWhere(context)),
         orderBy: { createdAt: "desc" },
         take: 10
       },
-      presalesRequests: { where: presalesVisibilityWhere(context), include: { assignedTo: true, opportunity: true, quote: true }, orderBy: { updatedAt: "desc" } }
+      presalesRequests: { where: permitted(() => presalesVisibilityWhere(context)), orderBy: { updatedAt: "desc" } },
+      projects: { where: permitted(() => projectVisibilityWhere(context)), select: { id: true, projectNumber: true, name: true, status: true, ragStatus: true, targetEndDate: true, projectManager: { select: { displayName: true } } }, orderBy: { updatedAt: "desc" } }
     }
   });
 

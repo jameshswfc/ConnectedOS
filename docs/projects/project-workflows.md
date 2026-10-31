@@ -272,3 +272,10 @@ Unable to create change request. Please try again or contact an administrator.
 ```
 
 - Failed creation attempts log project ID, user ID, attempted payload and exception message.
+# Connected Workflow and Billing Handoff
+
+The project detail page groups existing sections into Overview, Delivery, Commercial and Reports & Handover. Existing section hashes continue to select the appropriate view. Work Queue task links open the Tasks view; no second task store is introduced.
+
+Adding default dependency links now preserves later template dates instead of pulling every task back to its predecessor's earliest date. Dates that violate the dependency are still moved forward. Ordinary task edits retain the existing cascade. Calendar-day equality follows the same local-day convention as the working calendar, avoiding British Summer Time comparison errors. Existing project plans are not rewritten by deployment.
+
+Assigned PMs, authorised Business Operations users and administrators can request invoices for completed projects, milestones or stage gates. Requests go to the configured James administrator for explicit review. Sage creation remains disabled until secure setup, ledger/VAT checks and live acceptance. See `docs/integrations/sage-accounting.md`; this does not automatically synchronise Sage invoices into the existing local budget ledger.

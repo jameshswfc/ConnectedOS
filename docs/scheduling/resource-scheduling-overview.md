@@ -78,3 +78,8 @@ Current ConnectedOS delivery includes:
 - The Resources list defaults to active records and can optionally reveal inactive resources for historic master-data review.
 - The Field Services calendar hides inactive-resource future work by default and can optionally reveal inactive history for audit and QA review.
 - New assignment selectors now hide inactive users and inactive resources by default so only schedulable operational records appear in live booking and project-resource forms.
+# Schedule Coverage Summary
+
+The central calendar now includes weekday date coverage for active resources: booked dates, approved leave, pending leave, unbooked dates and overlapping dates. It uses the existing permission-filtered booking/project-assignment/leave feed. This is not hourly utilisation: partial-day bookings can legitimately overlap, public holidays are not yet included, and unbooked dates are not guaranteed availability.
+
+Show inactive history remains explicit and is preserved when changing dates/views. Calendar URL dates use local date components rather than UTC conversion, so navigating to the first day of a summer month does not accidentally select the previous month.

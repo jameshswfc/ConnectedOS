@@ -155,3 +155,10 @@ AI must not be allowed to access records a user could not access manually.
 Sessions reload primary and additional business roles from the database. Deactivation or archival clears access on the next request. Additional business roles combine capabilities without bypassing record ownership, quote approval or administrator checks. Non-admin role combinations cannot acquire `admin.*` permissions. Administrator remains an explicit primary role/permission-level decision.
 
 Archive is available only to user administrators for inactive accounts. It does not delete business history or Microsoft identities and does not remove the person from Microsoft 365. The normal Users list excludes archived records, including when listing inactive accounts. Existing Microsoft sign-in and directory import protections continue to block archived identities.
+# Connected Workflow and Sage Security Addendum
+
+Work Queue queries and customer-linked records use each module's existing visibility predicate. Account access does not imply access to all quotes, pre-sales requests or projects; child counts follow the same rule. User identity projections exclude password hashes.
+
+Sage credentials remain server-only. OAuth state is single-use, time-limited and user-bound, with PKCE; rotating tokens are encrypted and protected by an exclusive operation lease. A configured business ID is enforced on requests and cache display. Integration writes default off. Only the explicitly configured active James administrator can approve project invoice creation; ordinary finance visibility does not grant that approval.
+
+Mutating integration APIs check request origin and authenticated server context. Authentication/permission failures remain JSON 401/403. Provider failures are sanitised. Invoice creation uses an atomic claim and one POST; ambiguous outcomes block retry pending reconciliation. Do not log OAuth codes, tokens, secrets or provider response bodies. See `docs/integrations/sage-accounting.md` for deployment and recovery gates.

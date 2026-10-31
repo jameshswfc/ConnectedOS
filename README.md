@@ -257,3 +257,13 @@ See `docs/crm/crm-checkpoint-sprint-1-3.md` for the full checkpoint.
 This section records the original Sprint 1 boundary, not the current implementation. Later modules are present as listed above. Live email delivery, live SharePoint integration, the pre-sales assistant and Hilton template automation still need dedicated acceptance work.
 
 SharePoint and Microsoft Graph are represented by a document service interface and stub only. Live Graph calls are deferred until the integration sprint.
+
+## Connected Workflow and Sage Development
+
+The `codex/connected-workflow-sage` delivery adds a permission-scoped Work Queue, opportunity next steps, linked customer projects, focused project views and resource date-coverage summaries. It also adds a disabled-by-default Sage Accounting connector and a completed-stage invoice request workflow for James's approval. These changes require deployment before they appear on the live portal.
+
+- [Platform research and implementation decisions](docs/research/connected-workflow-platform-review.md)
+- [Sage configuration, financial controls and acceptance gates](docs/integrations/sage-accounting.md)
+- [Delivery handover and validation](docs/sprints/connected-workflow-sage-handover.md)
+
+Run `npm run test:journey` against a local database to check lead conversion, pre-sales, approved quote, accepted quote, project creation and invoice-request rejection/resubmission in a disposable schema. It refuses remote databases and disables Sage/email side effects. It is not a live Sage acceptance test. Production-test seeds are not required for this release.

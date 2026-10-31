@@ -30,7 +30,8 @@ export function ModuleCalendar({
   entries,
   resources,
   heading = "Calendar",
-  showResourceView = true
+  showResourceView = true,
+  extraParams = {}
 }: {
   basePath: string;
   view: CalendarView;
@@ -39,6 +40,7 @@ export function ModuleCalendar({
   resources?: ModuleCalendarResource[];
   heading?: string;
   showResourceView?: boolean;
+  extraParams?: Record<string, string>;
 }) {
   const days = buildCalendarDays(view, anchorDate);
   const { startDate, endDate } = getCalendarRange(view, anchorDate);
@@ -56,14 +58,14 @@ export function ModuleCalendar({
           </h2>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Link href={`${basePath}?view=${view}&date=${toDateParam(previousDate)}`}><Button variant="secondary">Previous</Button></Link>
-          <Link href={`${basePath}?view=${view}&date=${toDateParam(new Date())}`}><Button variant="secondary">Today</Button></Link>
-          <Link href={`${basePath}?view=${view}&date=${toDateParam(nextDate)}`}><Button variant="secondary">Next</Button></Link>
+          <Link href={calendarHref(basePath, view, previousDate, extraParams)}><Button variant="secondary">Previous</Button></Link>
+          <Link href={calendarHref(basePath, view, new Date(), extraParams)}><Button variant="secondary">Today</Button></Link>
+          <Link href={calendarHref(basePath, view, nextDate, extraParams)}><Button variant="secondary">Next</Button></Link>
           <div className="ml-2 flex flex-wrap gap-2">
-            <CalendarViewButton basePath={basePath} currentView={view} anchorDate={anchorDate} value="month" />
-            <CalendarViewButton basePath={basePath} currentView={view} anchorDate={anchorDate} value="week" />
-            <CalendarViewButton basePath={basePath} currentView={view} anchorDate={anchorDate} value="day" />
-            {showResourceView ? <CalendarViewButton basePath={basePath} currentView={view} anchorDate={anchorDate} value="resource" /> : null}
+            <CalendarViewButton basePath={basePath} currentView={view} anchorDate={anchorDate} value="month" extraParams={extraParams} />
+            <CalendarViewButton basePath={basePath} currentView={view} anchorDate={anchorDate} value="week" extraParams={extraParams} />
+            <CalendarViewButton basePath={basePath} currentView={view} anchorDate={anchorDate} value="day" extraParams={extraParams} />
+            {showResourceView ? <CalendarViewButton basePath={basePath} currentView={view} anchorDate={anchorDate} value="resource" extraParams={extraParams} /> : null}
           </div>
         </div>
       </div>
@@ -83,19 +85,25 @@ function CalendarViewButton({
   basePath,
   currentView,
   anchorDate,
-  value
+  value,
+  extraParams
 }: {
   basePath: string;
   currentView: CalendarView;
   anchorDate: Date;
   value: CalendarView;
+  extraParams: Record<string, string>;
 }) {
   const label = value === "resource" ? "Resource Grid" : value.charAt(0).toUpperCase() + value.slice(1);
   return (
-    <Link href={`${basePath}?view=${value}&date=${toDateParam(anchorDate)}`}>
+    <Link href={calendarHref(basePath, value, anchorDate, extraParams)}>
       <Button variant={currentView === value ? "primary" : "secondary"}>{label}</Button>
     </Link>
   );
+}
+
+export function calendarHref(basePath: string, view: CalendarView, date: Date, extraParams: Record<string, string> = {}) {
+  return `${basePath}?${new URLSearchParams({ ...extraParams, view, date: toDateParam(date) })}`;
 }
 
 function MonthCalendarGrid({

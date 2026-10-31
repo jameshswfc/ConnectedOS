@@ -4,12 +4,13 @@ import { visibleNavigationItems } from "@/components/navigation/navigation-items
 describe("navigation visibility", () => {
   it("shows every navigation item to administrators", () => {
     expect(labelsFor("Administrator", "administrator")).toEqual([
+      "Work Queue",
       "Dashboard",
       "Accounts",
       "Contacts",
       "Leads",
       "Opportunities",
-      "My Work",
+      "Sales Overview",
       "CRM Pipeline",
       "CRM Forecast",
       "Activities",
@@ -41,7 +42,7 @@ describe("navigation visibility", () => {
       "Contacts",
       "Leads",
       "Opportunities",
-      "My Work",
+      "Sales Overview",
       "CRM Pipeline",
       "CRM Forecast",
       "Activities",
@@ -77,7 +78,7 @@ describe("navigation visibility", () => {
       "Contacts",
       "Leads",
       "Opportunities",
-      "My Work",
+      "Sales Overview",
       "CRM Pipeline",
       "CRM Forecast",
       "Activities",

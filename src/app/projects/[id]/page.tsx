@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { canRequestProjectInvoice } from "@/modules/finance/invoice-request-rules";
+import { ProjectPanel, ProjectWorkspace } from "@/modules/projects/ui/project-workspace";
+import { assertCanEditProject } from "@/modules/projects/project-permissions";
 import type { ReactNode } from "react";
 import { AuditPanel } from "@/components/audit/audit-panel";
 import { AccessDenied } from "@/components/auth/access-denied";
@@ -25,8 +28,6 @@ type PageProps = { params: Promise<{ id: string }> };
 type ProjectData = Awaited<ReturnType<typeof getProject>>;
 type SerializedProject = SerializableProject<ProjectData>;
 
-const tabs = ["Overview", "Pre-Sales Handover", "Milestones", "Tasks", "Schedule", "Calendar", "Gantt", "Resources", "Budget", "Issues & Actions", "Daily Updates", "Weekly Updates", "Implementation Document", "Change Requests", "Closure", "Support Handover", "Documents", "Audit"];
-
 export default async function ProjectDetailPage({ params }: PageProps) {
   const { context, userName } = await getCrmPageContext();
   const { id } = await params;
@@ -46,20 +47,25 @@ export default async function ProjectDetailPage({ params }: PageProps) {
   const taskDayMetrics = projectTaskDayMetrics(project);
   const variance = calculateProjectScheduleVariance(project);
   const completionPercent = projectCompletionPercent(project);
+  let canEdit = true;
+  try { assertCanEditProject(context, project); } catch { canEdit = false; }
   return (
       <AppShell title={`${project.projectNumber} - ${project.name}`} userName={userName}>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap gap-2">{tabs.map((tab) => <a key={tab} href={`#${slug(tab)}`} className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:border-brand-200 hover:bg-brand-50">{tab}</a>)}</div>
-          <Link href={`/projects/${project.id}/edit`}><Button>Edit Project</Button></Link>
+          {canEdit ? <Link href={`/projects/${project.id}/edit`}><Button>Edit Project</Button></Link> : null}
+          {canRequestProjectInvoice(context, project) ? <Link href={`/finance/invoice-requests/new?projectId=${project.id}`}><Button variant="secondary">Request Invoice</Button></Link> : null}
         </div>
+        <ProjectWorkspace>
+        <ProjectPanel name="overview">
         <section id="overview" className="grid gap-4 lg:grid-cols-4">
           <Card><CardHeader><CardTitle>Overview</CardTitle></CardHeader><CardContent className="space-y-2 text-sm"><p>Account: <Link href={`/crm/accounts/${project.accountId}`} className="font-medium text-brand-700">{project.account.name}</Link></p><p>Opportunity: <Link href={`/crm/opportunities/${project.opportunityId}`} className="font-medium text-brand-700">{project.opportunity.opportunityName}</Link></p><p>Quote: <Link href={`/quotes/${project.quoteId}`} className="font-medium text-brand-700">{project.quote.quoteNumber}</Link></p><p>Pre-Sales: {project.presalesRequest ? <Link href={`/presales/${project.presalesRequest.id}`} className="font-medium text-brand-700">{project.presalesRequest.requestNumber}</Link> : "-"}</p><p>Project type: {getOpportunityTypeLabel(project.projectType)}</p><p>PM: {project.projectManager?.displayName ?? "Unassigned"}</p><p>Salesperson: {project.opportunity.owner.displayName}</p><p>Status: <ProjectBadge value={project.status} /></p><p>RAG: <ProjectBadge value={project.ragStatus} /></p></CardContent></Card>
           <Card><CardHeader><CardTitle>Progress</CardTitle></CardHeader><CardContent className="space-y-3"><p className="text-4xl font-semibold text-brand-900">{completionPercent}%</p><div className="h-3 rounded-full bg-slate-200"><div className="h-3 rounded-full bg-brand-700" style={{ width: `${completionPercent}%` }} /></div><p className="text-sm text-slate-600">Project completion from active tasks.</p></CardContent></Card>
           <Card><CardHeader><CardTitle>Dates & Resource Budget</CardTitle></CardHeader><CardContent className="space-y-2 text-sm"><p>Baseline start: {formatProjectDate(project.baselineStartDate)}</p><p>Baseline finish: {formatProjectDate(project.baselineEndDate)}</p><p>Current start: {formatProjectDate(project.startDate)}</p><p>Current finish: {formatProjectDate(project.targetEndDate)}</p><p>Actual start: {formatProjectDate(project.actualStartDate)}</p><p>Actual finish: {formatProjectDate(project.actualEndDate)}</p><p>Schedule variance: {variance.scheduleVarianceLabel}</p><p>Estimated task days: {formatProjectNumber(taskDayMetrics.estimatedDays)}</p><p>Actual task days: {formatProjectNumber(taskDayMetrics.actualDays)}</p><p>Task days variance: {formatProjectNumber(taskDayMetrics.variance)} ({taskDayMetrics.varianceLabel})</p><p>Resource scheduled days: {formatProjectNumber(resourceMetrics.scheduledDays)}</p><p>Resource actual days used: {formatProjectNumber(resourceMetrics.actualDaysUsed)}</p><p>Resource remaining days: {formatProjectNumber(resourceMetrics.remainingDays)}</p><p>Utilisation: {resourceMetrics.utilisationPercent}%</p>{taskDayMetrics.overEstimate ? <p className="rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-800">Task effort over estimate</p> : null}</CardContent></Card>
           <Card><CardHeader><CardTitle>Commercial</CardTitle></CardHeader><CardContent className="space-y-2 text-sm"><p>Commercial value: {formatProjectMoney(project.commercialValue)}</p><p>Budget cost: {formatProjectMoney(project.budgetCost)}</p><p>Budget sell: {formatProjectMoney(project.budgetSell)}</p><p>Invoiced: {formatProjectMoney(project.invoicedAmount)}</p><p>Collected: {formatProjectMoney(project.collectedAmount)}</p><p>Outstanding: {formatProjectMoney(project.outstandingAmount)}</p></CardContent></Card>
         </section>
-        <Section title="Project Stage Gates"><StageGatesList project={project} /></Section>
+        <section className="mt-6 border-t border-slate-200 pt-5"><h2 className="mb-4 text-lg font-semibold text-brand-900">Project Stage Gates</h2><StageGatesList project={project} /></section>
         <Card className="mt-4"><CardHeader><CardTitle>Scope Summary</CardTitle></CardHeader><CardContent className="whitespace-pre-wrap text-sm text-slate-700">{project.scopeSummary || project.description || "No scope summary recorded."}</CardContent></Card>
+        </ProjectPanel>
         <Section title="Pre-Sales Handover"><PresalesHandover project={project} /></Section>
         <Section title="Milestones"><MilestonesTable project={projectClient} projectType={project.projectType} users={userOptions} /></Section>
         <Section title="Tasks"><div className="flex flex-wrap gap-2"><ProjectTaskQuickForm projectId={project.id} users={userOptions} /><AddDefaultTasksButton projectId={project.id} /><AddDefaultDependenciesButton projectId={project.id} /><ProjectLockPlanButton projectId={project.id} /></div><ProjectTasksTable tasks={projectClient.tasks} users={userOptions} /></Section>
@@ -77,12 +83,13 @@ export default async function ProjectDetailPage({ params }: PageProps) {
         <Section title="Support Handover"><ProjectFormQuickForm projectId={project.id} formType="support_handover" buttonLabel="Add Support Handover" /><Link href={`/api/v1/projects/${project.id}/exports/support-handover/pdf`}><Button>Export Handover PDF</Button></Link></Section>
         <Section title="Documents">{project.documentRecords.length ? project.documentRecords.map((record) => <p key={record.id} className="text-sm">{record.document.fileName} - {projectLabel(record.documentType)}</p>) : <p className="text-sm text-slate-500">No project documents linked yet. SharePoint live upload remains deferred.</p>}</Section>
         <Section title="Audit"><AuditPanel title="Project Audit" module="projects" entityType="Project" entityId={project.id} /></Section>
+        </ProjectWorkspace>
       </AppShell>
   );
 }
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
-  return <Card id={slug(title)} className="mt-4"><CardHeader><CardTitle>{title}</CardTitle></CardHeader><CardContent className="space-y-4">{children}</CardContent></Card>;
+  return <ProjectPanel name={slug(title)}><section id={slug(title)} className="mt-4"><h2 className="mb-4 text-lg font-semibold text-brand-900">{title}</h2><div className="space-y-4">{children}</div></section></ProjectPanel>;
 }
 
 function ProjectTasksTable({ tasks, users }: { tasks: SerializedProject["tasks"]; users: { id: string; label: string }[] }) {

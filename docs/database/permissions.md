@@ -258,3 +258,12 @@ Users retain one primary role and can have additional approved business roles th
 Administrators can archive an already inactive user. This sets the existing soft-delete fields, removes the account from the Users list, preserves all linked history and retains its Microsoft tenant/object identity. Archived accounts cannot sign in or be recreated by directory import. Archiving oneself or an active account is rejected. Role changes and archival are audited transactionally.
 
 Verification: `npm run test:user-roles` exercises persistence, union permissions, selectors, administrator isolation and archival in a temporary local database schema, removed afterwards. It refuses remote databases.
+# Connected Workflow and Invoice Permissions
+
+- Work Queue uses existing per-module read and record visibility rules, with assigned-to-me as default. It grants no edit rights.
+- Customer-linked quotes, pre-sales and projects are independently scoped; customer access is not a cross-module bypass.
+- Project invoice requests: administrator, Business Operations with `projects.update`, or the assigned Project Manager with `projects.update`.
+- Invoice request reading: finance-wide readers/administrators, or users allowed to view the linked project.
+- Invoice approval/rejection: exact `PROJECT_INVOICE_APPROVER_USER_ID` plus Administrator permission level; the recorded request approver must match.
+- Sage snapshot reading: Administrator or `finance.read_all`. Connection management: Administrator or `admin.integrations`.
+- No business-role or combined-role model change is introduced by this delivery.

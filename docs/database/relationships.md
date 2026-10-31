@@ -140,3 +140,6 @@ Add indexes for:
 - deleted_at.
 
 High-use dashboards may need compound indexes later.
+# Sage and Invoice Request Relationships
+
+Project has many ProjectInvoiceRequests; each request has one requesting User and one designated approving User. A project/trigger pair is unique. SageConnection owns many SageInvoiceSnapshots; external invoice IDs are unique within that connection. Sage identifiers remain external references, not guessed foreign keys to ConnectedOS customers. The approving user explicitly selects and confirms the Sage customer before any write.

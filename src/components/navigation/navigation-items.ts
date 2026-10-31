@@ -13,12 +13,13 @@ export type NavigationItem = {
 export const approvedRoleNames = ["Administrator", "Sales", "Pre-Sales", "Project Engineer", "Project Manager", "Field Engineer", "Finance", "Business Operations", "Staff"] as const;
 
 export const navigationItems: NavigationItem[] = [
+  { href: "/work", label: "Work Queue", icon: ListTodo, permissions: ["crm.lead.read_all", "crm.lead.read_own", "crm.opportunity.read_all", "crm.opportunity.read_own", "crm.activity.read_all", "crm.activity.read_own", "presales.read_all", "presales.read_assigned", "quotes.read_all", "quotes.read_own", "projects.read_all", "projects.read_assigned"] },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["Administrator", "Staff"] },
   { href: "/crm/accounts", label: "Accounts", icon: Building2, roles: ["Administrator", "Sales", "Pre-Sales", "Business Operations"], permissions: ["crm.account.read_all", "crm.account.read_own", "crm.account.create", "crm.account.update"] },
   { href: "/crm/contacts", label: "Contacts", icon: Contact, roles: ["Administrator", "Sales", "Pre-Sales", "Business Operations"], permissions: ["crm.contact.read_all", "crm.contact.read_own", "crm.contact.create", "crm.contact.update"] },
   { href: "/crm/leads", label: "Leads", icon: UserRoundPlus, roles: ["Administrator", "Sales", "Pre-Sales", "Business Operations"], permissions: ["crm.lead.read_all", "crm.lead.read_own", "crm.lead.create", "crm.lead.update"] },
   { href: "/crm/opportunities", label: "Opportunities", icon: Target, roles: ["Administrator", "Sales", "Pre-Sales", "Business Operations"], permissions: ["crm.opportunity.read_all", "crm.opportunity.read_own", "crm.opportunity.create", "crm.opportunity.update"] },
-  { href: "/crm/my-work", label: "My Work", icon: BriefcaseBusiness, roles: ["Administrator", "Sales", "Business Operations"], permissions: ["crm.lead.read_own", "crm.opportunity.read_own", "crm.activity.read_own"] },
+  { href: "/crm/my-work", label: "Sales Overview", icon: BriefcaseBusiness, roles: ["Administrator", "Sales", "Business Operations"], permissions: ["crm.lead.read_own", "crm.opportunity.read_own", "crm.activity.read_own"] },
   { href: "/crm/pipeline", label: "CRM Pipeline", icon: Columns3, roles: ["Administrator", "Sales", "Business Operations"], permissions: ["crm.opportunity.read_all", "crm.opportunity.read_own"] },
   { href: "/crm/forecast", label: "CRM Forecast", icon: CalendarRange, roles: ["Administrator", "Sales", "Business Operations"], permissions: ["crm.opportunity.read_all", "crm.opportunity.read_own"] },
   { href: "/crm/activities", label: "Activities", icon: ListTodo, roles: ["Administrator", "Sales", "Pre-Sales", "Business Operations"], permissions: ["crm.activity.read_all", "crm.activity.read_own", "crm.activity.create", "crm.activity.update"] },

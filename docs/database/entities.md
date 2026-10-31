@@ -434,3 +434,11 @@ Fields:
 ## Reporting Entities
 
 Reporting should generally use transactional tables rather than duplicate data. Aggregation tables may be added later for performance.
+# Sage and Project Invoicing Addendum
+
+- `SageConnection`: one configured business, encrypted OAuth tokens, connection metadata and refresh lease.
+- `SageOAuthAttempt`: expiring user-bound hashed state and encrypted verifier, consumed once.
+- `SageInvoiceSnapshot`: read-only external invoice cache, unique per connection/external ID. It is not a second billing ledger.
+- `ProjectInvoiceRequest`: completed-project/stage request, exact monetary amounts, requester/approver, approval payload, Sage reference and reconciliation status. Unique project/trigger and external invoice ID prevent duplicate request/posting paths.
+
+Migrations: `20261101010000_sage_readonly_accounting`, `20261101020000_project_invoice_approvals`. Configuration and live acceptance gates are documented in `docs/integrations/sage-accounting.md`.

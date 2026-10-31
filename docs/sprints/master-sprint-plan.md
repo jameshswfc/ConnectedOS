@@ -539,3 +539,19 @@ Deferred:
 - Archive removes inactive users from normal administration lists while preserving records, audit history and blocked Microsoft identities.
 - No production test seed or reset is required for this deployment. Apply only the additive migration and separately reviewed user changes.
 - Validate with unit tests, lint, build, Prisma validation/status and `npm run test:user-roles` against a local database.
+
+## Connected Workflow and Sage Approval Delivery
+
+Research-led changes are recorded in `docs/research/connected-workflow-platform-review.md`, covering Odoo, Salesforce, HubSpot, Pipedrive, Asana, monday.com, Float, Zoho, Dynamics 365 Field Service, ServiceM8, QuoteWerks and ConnectWise CPQ.
+
+Implemented in the development branch:
+
+- Shared permission-scoped Work Queue and stage-aware opportunity next steps.
+- Customer-linked projects and restricted child-record/count visibility.
+- Focused project views with preserved deep links and existing forms.
+- Central schedule coverage summary; retained inactive-history filters; British Summer Time calendar-link correction.
+- Default dependencies preserve planned task spacing instead of collapsing template dates.
+- Sage Accounting OAuth, encrypted tokens and business-scoped invoice snapshots, disabled by default.
+- Completed project/stage invoice requests, designated James approval, one controlled Sage POST, audit/notifications and uncertain-result reconciliation hold.
+
+Additive migrations: `20261101010000_sage_readonly_accounting` and `20261101020000_project_invoice_approvals`. No production seed/reset is part of deployment. See `connected-workflow-sage-handover.md` for validation and live deployment gates. Document-assisted pre-sales, Hilton CBOM automation, true hourly capacity and wider Sage financial operations remain separate work, not delivered claims.

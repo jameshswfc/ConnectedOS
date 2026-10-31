@@ -239,3 +239,19 @@ Local restart browser smoke evidence: active administrator login succeeded; Help
 3. Confirm file metadata is stored
 4. Confirm the SharePoint-style fallback message is understandable when live SharePoint is not configured
 5. Confirm unauthorised users cannot download attachments they should not access
+# Connected Workflow and Sage Acceptance
+
+Perform operational checks after deployment with Sage writes disabled:
+
+1. Sales opens Work Queue: only permitted work appears; Assigned to me and Needs attention filters work. A task link opens the project's Tasks panel.
+2. Opportunity Next Step reflects its stage and missing open-deal contact/decision/follow-up fields. Existing Lead -> Pre-Sales -> Quote -> Project links still work.
+3. Customer account shows permitted linked projects. A user without quote/project read access must not see those records or sensitive counts.
+4. Project groups switch between Overview, Delivery, Commercial and Reports & Handover. Deep links, existing edits and form values remain usable on desktop/mobile.
+5. Resource schedule shows booked/leave/overlap weekday coverage. Inactive records stay hidden by default; Show inactive history survives date/view navigation. Previous month from October reaches September, including summer-time dates.
+6. New project's default dependencies preserve later task offsets; an actual predecessor date edit still runs the existing cascade. Existing plans are not automatically rewritten.
+7. Assigned PM requests an invoice for a completed milestone. Incomplete work and over-contract totals are rejected clearly. James receives a notification; another administrator/PM cannot approve on his behalf.
+8. James rejects with a reason; PM can resubmit the same trigger without creating duplicate requests. Sage stays untouched while disabled.
+9. After separately authorised Sage setup, test read-only connection and a known invoice refresh. Compare currency, invoice number and outstanding balance directly in Sage.
+10. Only after business/customer/ledger/VAT checks and explicit approval, test one real invoice creation with James present. Confirm no duplicate on a repeated action, no customer email is sent, and uncertain responses require reconciliation.
+
+The local automated tests use disposable database schemas and mocked Sage writes. They do not certify real Sage consent, tax configuration, SMTP delivery, Hilton CBOM output or the pre-sales document assistant.

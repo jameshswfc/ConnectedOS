@@ -666,6 +666,8 @@ model User {
   userRoles     UserRole[]
   auditLogs     AuditLog[]
   notifications Notification[]
+  invoiceRequestsMade ProjectInvoiceRequest[] @relation("InvoiceRequester")
+  invoiceRequestsToApprove ProjectInvoiceRequest[] @relation("InvoiceApprover")
   comments      Comment[]
   ownedAccounts Account[] @relation("AccountOwner")
   createdAccounts Account[] @relation("AccountCreatedBy")
@@ -949,6 +951,91 @@ model Contact {
   @@index([status])
   @@index([deletedAt])
   @@map("contacts")
+}
+
+model SageConnection {
+  id              String    @id @default("sage-accounting")
+  businessId      String    @map("business_id")
+  encryptedTokens String    @map("encrypted_tokens")
+  connectedById   String    @map("connected_by_id") @db.Uuid
+  connectedAt     DateTime  @default(now()) @map("connected_at")
+  lastSyncedAt    DateTime? @map("last_synced_at")
+  syncLeaseUntil  DateTime? @map("sync_lease_until")
+  lastError       String?   @map("last_error")
+  invoices        SageInvoiceSnapshot[]
+  @@map("sage_connections")
+}
+
+enum ProjectInvoiceRequestStatus {
+  requested
+  approved
+  creating
+  created
+  rejected
+  reconciliation_required
+}
+
+model ProjectInvoiceRequest {
+  id                String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectId         String @map("project_id") @db.Uuid
+  triggerKey        String @map("trigger_key")
+  triggerLabel      String @map("trigger_label")
+  description       String
+  netAmount         Decimal @map("net_amount") @db.Decimal(12, 2)
+  taxRate           Decimal @map("tax_rate") @db.Decimal(5, 2)
+  taxAmount         Decimal @map("tax_amount") @db.Decimal(12, 2)
+  totalAmount       Decimal @map("total_amount") @db.Decimal(12, 2)
+  currency          String @default("GBP")
+  status            ProjectInvoiceRequestStatus @default(requested)
+  requestedById     String @map("requested_by_id") @db.Uuid
+  approverId        String @map("approver_id") @db.Uuid
+  approvedAt        DateTime? @map("approved_at")
+  rejectionReason   String? @map("rejection_reason")
+  sageBusinessId    String? @map("sage_business_id")
+  sageContactId     String? @map("sage_contact_id")
+  sageContactName   String? @map("sage_contact_name")
+  approvedPayload   Json? @map("approved_payload")
+  sageInvoiceId     String? @unique @map("sage_invoice_id")
+  sageInvoiceNumber String? @map("sage_invoice_number")
+  lastError         String? @map("last_error")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  project           Project @relation(fields: [projectId], references: [id])
+  requestedBy       User @relation("InvoiceRequester", fields: [requestedById], references: [id])
+  approver          User @relation("InvoiceApprover", fields: [approverId], references: [id])
+
+  @@unique([projectId, triggerKey])
+  @@index([approverId, status])
+  @@map("project_invoice_requests")
+}
+
+model SageOAuthAttempt {
+  stateHash       String   @id @map("state_hash")
+  userId          String   @map("user_id") @db.Uuid
+  encryptedVerifier String @map("encrypted_verifier")
+  expiresAt       DateTime @map("expires_at")
+  @@index([expiresAt])
+  @@map("sage_oauth_attempts")
+}
+
+// Read-only external cache, deliberately not a second local billing ledger.
+model SageInvoiceSnapshot {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  connectionId    String   @map("connection_id")
+  externalId      String   @map("external_id")
+  invoiceNumber   String   @map("invoice_number")
+  customerName    String   @map("customer_name")
+  status          String
+  currency        String
+  invoiceDate     DateTime @map("invoice_date") @db.Date
+  dueDate         DateTime? @map("due_date") @db.Date
+  totalAmount     Decimal  @map("total_amount") @db.Decimal(16, 2)
+  outstandingAmount Decimal @map("outstanding_amount") @db.Decimal(16, 2)
+  syncedAt        DateTime @map("synced_at")
+  connection      SageConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  @@unique([connectionId, externalId])
+  @@index([dueDate])
+  @@map("sage_invoice_snapshots")
 }
 
 model Lead {
@@ -1523,6 +1610,7 @@ model Project {
   purchaseOrders             PurchaseOrder[]
   customerInvoices           CustomerInvoice[]
   billingSchedules           BillingSchedule[]
+  invoiceRequests            ProjectInvoiceRequest[]
   assets                     Asset[]
   helpdeskTickets            HelpdeskTicket[]
 

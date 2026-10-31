@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { AccessDenied } from "@/components/auth/access-denied";
 import { AuditPanel } from "@/components/audit/audit-panel";
 import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +15,13 @@ type PageProps = { params: Promise<{ id: string }> };
 export default async function AccountDetailPage({ params }: PageProps) {
   const { context, userName } = await getCrmPageContext();
   const { id } = await params;
-  const account = await getAccount(context, id);
+  let account;
+  try { account = await getAccount(context, id); }
+  catch (error) {
+    if (error instanceof Error && error.message.startsWith("Missing permission")) return <AppShell title="Customer" userName={userName}><AccessDenied /></AppShell>;
+    if (error instanceof Error && error.message === "Account not found") notFound();
+    throw error;
+  }
 
   return (
     <AppShell title={account.name} userName={userName}>
@@ -93,6 +101,10 @@ export default async function AccountDetailPage({ params }: PageProps) {
           )) : "No recent activities."}
         </CardContent>
       </Card>
+      <section className="mt-6 border-t border-slate-200 pt-5" aria-label="Customer projects">
+        <h2 className="mb-3 text-lg font-semibold text-brand-900">Projects</h2>
+        {account.projects.length ? <div className="overflow-x-auto"><table className="w-full min-w-[550px] text-left text-sm"><thead><tr>{["Project", "PM", "Status", "RAG", "Target finish"].map((label) => <th key={label} className="p-3">{label}</th>)}</tr></thead><tbody>{account.projects.map((project) => <tr key={project.id} className="border-t border-slate-200"><td className="p-3"><Link href={`/projects/${project.id}`} className="text-brand-700 underline">{project.projectNumber} · {project.name}</Link></td><td className="p-3">{project.projectManager?.displayName || "Awaiting assignment"}</td><td className="p-3">{labelFromValue(project.status)}</td><td className="p-3">{labelFromValue(project.ragStatus)}</td><td className="p-3">{formatDate(project.targetEndDate)}</td></tr>)}</tbody></table></div> : <p className="text-sm text-slate-500">No linked projects visible to you.</p>}
+      </section>
       <Card className="mt-4">
         <CardHeader><CardTitle>Notes</CardTitle></CardHeader>
         <CardContent className="text-sm text-slate-700">{account.notes ?? "No notes recorded."}</CardContent>

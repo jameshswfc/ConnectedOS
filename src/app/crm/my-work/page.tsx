@@ -23,7 +23,7 @@ export default async function CrmMyWorkPage({ searchParams }: PageProps) {
   ]);
 
   return (
-    <AppShell title="CRM My Work" userName={userName}>
+    <AppShell title="Sales Overview" userName={userName}>
       <div className="space-y-5">
         {scope.canSelect ? <SalespersonFilter salespeople={salespeople} selectedSalespersonId={scope.selectedSalespersonId} /> : null}
         <div className="grid gap-4 md:grid-cols-5">

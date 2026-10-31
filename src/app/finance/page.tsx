@@ -4,6 +4,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { Button } from "@/components/ui/button";
 import { getCrmPageContext } from "@/modules/crm/ui/crm-page-context";
 import { getFinanceDashboard } from "@/modules/finance/finance-service";
+import { canReadSage } from "@/services/integrations/sage/sage-security";
 import { ModuleMetricCard, formatModuleMoney } from "@/modules/operations/ui/module-ui";
 
 export default async function FinancePage() {
@@ -18,6 +19,8 @@ export default async function FinancePage() {
   return (
     <AppShell title="Finance" userName={userName}>
       <div className="mb-4 flex flex-wrap justify-end gap-2">
+        <Link href="/finance/invoice-requests"><Button variant="secondary">Invoice requests</Button></Link>
+        {canReadSage(context) ? <Link href="/finance/sage"><Button variant="secondary">Sage Accounting</Button></Link> : null}
         <Link href="/finance/invoices"><Button variant="secondary">Invoices</Button></Link>
         <Link href="/finance/billing-schedules"><Button variant="secondary">Billing Schedules</Button></Link>
         <Link href="/finance/invoices/new"><Button>Create Invoice</Button></Link>

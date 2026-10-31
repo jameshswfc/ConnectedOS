@@ -1,5 +1,7 @@
 import { HelpdeskTicketStatus, PresalesRequestStatus, QuoteStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { presalesVisibilityWhere } from "@/modules/presales/presales-permissions";
+import { getInvoiceApprovalCard } from "@/modules/finance/invoice-request-service";
 import { getCrmMyWork } from "@/modules/crm/my-work/my-work-service";
 import { getHelpdeskDashboard } from "@/modules/helpdesk/helpdesk-service";
 import { getFinanceDashboard } from "@/modules/finance/finance-service";
@@ -16,11 +18,13 @@ export type DashboardCard = {
 
 export async function getDashboardOverview(context: CrmAccessContext) {
   const cards: DashboardCard[] = [];
+  const invoiceApproval = await getInvoiceApprovalCard(context);
+  if (invoiceApproval) cards.push(invoiceApproval);
 
   if (hasAny(context, ["crm.lead.read_all", "crm.lead.read_own", "crm.opportunity.read_all", "crm.opportunity.read_own", "crm.activity.read_all", "crm.activity.read_own"])) {
     const myWork = await getCrmMyWork(context);
     cards.push(
-      { title: "My Work", value: String(myWork.leads.length + myWork.opportunities.length + myWork.activities.length), helper: `${myWork.leads.length} leads, ${myWork.opportunities.length} opportunities, ${myWork.activities.length} live activities`, href: "/crm/my-work" },
+      { title: "Sales Overview", value: String(myWork.leads.length + myWork.opportunities.length + myWork.activities.length), helper: `${myWork.leads.length} leads, ${myWork.opportunities.length} opportunities, ${myWork.activities.length} live activities`, href: "/crm/my-work" },
       { title: "Overdue Follow-Ups", value: String(myWork.overdueFollowUps.length), helper: `${myWork.dueFollowUps.length} due today`, href: "/crm/my-work" }
     );
   }
@@ -91,10 +95,10 @@ export async function getDashboardOverview(context: CrmAccessContext) {
     });
   }
 
-  if (hasAny(context, ["presales.read_all", "presales.read_assigned", "presales.create", "presales.update"])) {
+  if (hasAny(context, ["presales.read_all", "presales.read_assigned", "presales.create"])) {
     const [openRequests, awaitingCustomer] = await Promise.all([
-      prisma.presalesRequest.count({ where: { deletedAt: null, status: { notIn: [PresalesRequestStatus.complete, PresalesRequestStatus.cancelled] } } }),
-      prisma.presalesRequest.count({ where: { deletedAt: null, status: "waiting_customer" } })
+      prisma.presalesRequest.count({ where: { AND: [presalesVisibilityWhere(context), { status: { notIn: [PresalesRequestStatus.complete, PresalesRequestStatus.cancelled] } }] } }),
+      prisma.presalesRequest.count({ where: { AND: [presalesVisibilityWhere(context), { status: "waiting_customer" }] } })
     ]);
     cards.push({
       title: "Pre-Sales Queue",

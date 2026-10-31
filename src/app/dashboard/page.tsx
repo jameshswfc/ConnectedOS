@@ -40,6 +40,7 @@ export default async function DashboardPage() {
         </div>
       </section>
       <div className="mb-4 flex flex-wrap gap-2">
+        {canAccessNavigationPath("/work", user.permissions, user.permissionLevel, user.roles ?? user.role) ? <Link href="/work"><Button>Open Work Queue</Button></Link> : null}
         <Link href="/settings"><Button variant="secondary">Settings</Button></Link>
         <Link href="/notifications"><Button variant="secondary">Notifications</Button></Link>
         {canAccessNavigationPath("/reports", user.permissions, user.permissionLevel, user.roles ?? user.role) ? <Link href="/reports"><Button variant="secondary">Reports</Button></Link> : null}
