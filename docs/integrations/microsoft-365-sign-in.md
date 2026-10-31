@@ -6,7 +6,7 @@ Any member of the Connected Hospitality tenant may sign in. A new member receive
 
 The existing single-business-role model is retained. Multiple simultaneous roles, directory group synchronisation and automatic role elevation are not implemented.
 
-The code is opt-in. Local sign-in remains available until the tenant registration, identity links and deployment are verified. No tenant credentials are committed. Microsoft sign-in does not require SharePoint or Graph permissions and does not fetch profile photographs.
+The code is opt-in. Production Microsoft sign-in was enabled and verified on 31 October 2026; local sign-in remains available as recovery. See `docs/deployment/production-release-2026-10-31.md` for the verified release and rollback details. Other environments remain opt-in. No tenant credentials are committed. Microsoft sign-in does not require SharePoint or Graph permissions and does not fetch profile photographs.
 
 ## Registration Walkthrough
 
@@ -34,7 +34,7 @@ AZURE_AD_CLIENT_ID=<application-client-id>
 AZURE_AD_CLIENT_SECRET=<secret-value>
 ```
 
-Keep the existing strong `NEXTAUTH_SECRET`; changing it invalidates sessions. A repository push alone is not evidence the server has updated. The Fasthosts VPS has been inspected: the application runs under PM2 as `connectedos`, from `/opt/connectedos`, using `npm run start -- -p 3002`. Preserve its environment, uploads and existing uncommitted server changes. Back up and verify a candidate release before switching the live process. Do not run seed or migration-reset commands during this release.
+Keep the existing strong `NEXTAUTH_SECRET`; changing it invalidates sessions. A repository push alone is not evidence the server has updated. The Fasthosts VPS runs PM2 process `connectedos` from `/opt/connectedos-releases/20261031-m365`, using `npm run start -- -p 3002`; `/opt/connectedos` is the previous release and shared upload location. Preserve its environment, uploads and existing uncommitted server changes. Back up and verify a candidate release before switching the live process. Do not run seed or migration-reset commands during this release.
 
 ## Identity and Access Controls
 

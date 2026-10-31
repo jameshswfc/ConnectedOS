@@ -1,5 +1,7 @@
 # ConnectedOS Restart and Delivery Plan
 
+Production update: the Microsoft login, grouped navigation and connected sales journey were deployed and browser-checked on 31 October 2026. See `docs/deployment/production-release-2026-10-31.md`. The inspection and validation notes below describe the earlier restart checkpoint, not the final deployment state. The pre-sales assistant and Hilton CBOM adapter remain planned, not delivered by this release.
+
 ## Agreed Outcome
 
 ConnectedOS should organise work around one connected journey:
