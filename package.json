@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:journey": "node --env-file=.env --import tsx scripts/check-sales-journey.ts",
+    "import:microsoft-users": "node --env-file=.env --import tsx scripts/import-microsoft-users.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "prisma db seed",

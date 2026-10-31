@@ -49,6 +49,14 @@ Keep the existing strong `NEXTAUTH_SECRET`; changing it invalidates sessions. A 
 
 ## Verification and Rollback
 
+### Reviewed Directory Import
+
+`npm run import:microsoft-users -- --file /private/path/directory.json --admin-id <administrator-user-id>` previews a verified Entra directory snapshot. Add `--apply` only after reviewing every match. The snapshot format is `{ "tenantId": "<uuid>", "users": [{ "objectId": "<uuid>", "email": "person@example.com", "displayName": "Person", "userType": "Member", "accountEnabled": true }] }`. Obtain these values from the tenant's authenticated directory, not user-supplied sign-in claims. Keep the snapshot outside the repository and remove temporary copies after reconciliation.
+
+The command requires an active administrator with `admin.users`, checks the configured tenant, matches immutable identities first, then administrator-reviewed exact case-insensitive emails. It never matches names, overwrites a different identity, reactivates a local account, changes existing roles/passwords, or modifies business ownership. Ambiguous records stop the entire applied transaction. Guests and disabled accounts are skipped; a blank legacy user type can retain an existing link but cannot be newly provisioned. New members receive passwordless Staff access only. Every creation/link is audited; reruns do not duplicate users or audit events. No migration or directory-wide Graph permission is required.
+
+This is a one-off/repeatable administrator import, not continuous directory synchronisation. New members can also provision themselves at first Microsoft sign-in. Entra offboarding still requires local deactivation for immediate session revocation.
+
 Do not run seed/reset-password scripts to enable Microsoft login: the local configuration may reference an older deactivated administrator. For rollback, set `ENABLE_ENTRA_LOGIN=false`, restart the app, use the tested local administrator account, and investigate without deleting identities or business records.
 
 The automated suite covers provider gating, tenant/member claims, least-privilege provisioning, email collision prevention, identity linking, session revocation and API boundaries. A real Microsoft redirect/consent round-trip remains required after registration.

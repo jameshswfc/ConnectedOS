@@ -23,7 +23,7 @@ The live application is no longer running from the old checkout. Do not assume a
 
 The production environment enables the single-tenant provider alongside local fallback. The secret is stored only in the candidate's private `.env` (mode `600`), not in this repository. Keep the existing NextAuth session secret unchanged.
 
-The verified James Microsoft identity was linked through the account-link service to the existing active James administrator record. This wrote an audit entry and preserved role, password and ownership. Other existing local staff records still require explicit administrator identity linking. New tenant members receive Staff with no operational permissions until an administrator assigns a role.
+The verified James Microsoft identity was linked through the account-link service to the existing active James administrator record. This wrote an audit entry and preserved role, password and ownership. A subsequent administrator-requested directory reconciliation linked the other seven existing active users and created nine missing passwordless Staff accounts. All 17 eligible active accounts now show Linked in the live Users page. Existing roles and ownership were preserved; four guests and three disabled Microsoft accounts were excluded. A repeat preview reported 17 unchanged, seven excluded, zero conflicts and zero pending creations/links. No directory-wide Graph permission was added. This is a reviewed import, not continuous directory synchronisation.
 
 Enterprise application checks: sign-in enabled, assignment not required. James accepted the individual Microsoft consent screen. Microsoft sign-in then completed on the public portal, returning to Dashboard with the existing Administrator role and permission level. The successful sign-in was verified in the application audit trail.
 
@@ -31,7 +31,7 @@ The first callback exposed an nginx response-header limit: `upstream sent too bi
 
 ## Validation
 
-- 417 tests passed in 88 files.
+- Initial release: 417 tests passed in 88 files. After directory import: 435 tests passed in 89 files, including 18 new tests covering least privilege, inactive/guest exclusion, identity collisions, role preservation and repeatability. Local lint, build and Prisma validation passed again; 26 migrations remain current.
 - Lint passed.
 - Local and production builds passed.
 - Prisma schema validation passed; production migration status is current.
