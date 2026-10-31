@@ -210,5 +210,5 @@ function PermissionLevelSelect({ defaultValue }: { defaultValue?: PermissionLeve
 
 function formatDate(value: Date | string | null) {
   if (!value) return "-";
-  return new Date(value).toLocaleString("en-GB");
+  return new Date(value).toLocaleString("en-GB", { timeZone: "Europe/London" });
 }

@@ -31,4 +31,8 @@ describe("admin roles and archive UI", () => {
     render(<AdminUserManagement users={[{ ...user, isActive: true }]} roles={roles} microsoftEnabled />);
     expect(screen.queryByRole("button", { name: "Archive User" })).toBeNull();
   });
+  it("renders last-login timestamps consistently in UK time on server and client", () => {
+    render(<AdminUserManagement users={[{ ...user, lastLoginAt: "2026-06-22T20:22:41Z" }]} roles={roles} microsoftEnabled />);
+    expect(screen.getByText(/22\/06\/2026, 21:22:41/)).toBeTruthy();
+  });
 });
