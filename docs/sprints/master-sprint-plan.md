@@ -544,7 +544,7 @@ Deferred:
 
 Research-led changes are recorded in `docs/research/connected-workflow-platform-review.md`, covering Odoo, Salesforce, HubSpot, Pipedrive, Asana, monday.com, Float, Zoho, Dynamics 365 Field Service, ServiceM8, QuoteWerks and ConnectWise CPQ.
 
-Implemented in the development branch:
+Implemented and deployed on 1 November 2026, with Sage disconnected and both Sage toggles disabled (see `docs/deployment/production-release-2026-11-01.md`):
 
 - Shared permission-scoped Work Queue and stage-aware opportunity next steps.
 - Customer-linked projects and restricted child-record/count visibility.
@@ -555,3 +555,14 @@ Implemented in the development branch:
 - Completed project/stage invoice requests, designated James approval, one controlled Sage POST, audit/notifications and uncertain-result reconciliation hold.
 
 Additive migrations: `20261101010000_sage_readonly_accounting` and `20261101020000_project_invoice_approvals`. No production seed/reset is part of deployment. See `connected-workflow-sage-handover.md` for validation and live deployment gates. Document-assisted pre-sales, Hilton CBOM automation, true hourly capacity and wider Sage financial operations remain separate work, not delivered claims.
+
+## SharePoint and External Pre-Sales Intake Scope
+
+Added 1 November 2026; planned, not yet implemented. See [delivery scope and acceptance gates](sharepoint-external-presales-plan.md).
+
+- Real SharePoint folder provisioning for opportunities, pre-sales, quotes and projects, with shared document storage, retries, record links and a non-destructive existing-file migration plan.
+- External hotel pre-sales submission form with supporting uploads, isolated intake review and links into the existing customer/opportunity/pre-sales workflow.
+- Recommended invitation-only pilot; selected SharePoint locations, explicit Microsoft consent and upload security acceptance required before live activation.
+- The workflow release is live independently of these additions. Sage invoice writes remain disabled until separately approved and financially tested.
+- James approved Completed Sites archival on explicit fully-complete project closure. Preserve other active projects in shared hotel folders.
+- External forms should prefill verified hotel brand/location and partner invitation context, with confirmation and staff review for ambiguous matches.

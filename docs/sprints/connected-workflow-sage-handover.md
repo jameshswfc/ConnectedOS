@@ -2,13 +2,27 @@
 
 Prepared 31 October 2026. Branch: `codex/connected-workflow-sage`.
 
+## Release Readiness Update: 1 November 2026
+
+James approved deployment with Sage entirely disabled, including temporary access, backup and verification before traffic switching. Deployment completed on 1 November 2026. The authoritative release record is [production-release-2026-11-01.md](../deployment/production-release-2026-11-01.md).
+
+- Fresh local validation passed: 500 tests / 103 files, lint, production build, Prisma validation and migration status (29 current).
+- Isolated local sales-journey and combined-role persistence checks passed. The sandbox initially blocked database connections; reruns with authorised local database access passed.
+- Exact application commit `1242cec05d03958b23b2803d1634565c2a9cb3b6` is live in `/opt/connectedos-releases/20261101-workflow`.
+- The earlier browser-console attempt failed because of keyboard corruption. James subsequently signed in privately through normal SSH and installed a short-lived public key; no host-key bypass or password reset was used.
+- Verified private backup stored at `/opt/connectedos-backups/20261101-workflow`. Both additive migrations applied; production has 29 current migrations, with the historical pre-sales baseline preserved.
+- Microsoft sign-in verified freshly in the browser; Work Queue, opportunity guidance, linked creation forms, customer projects, schedule coverage and Sage disconnected state verified live.
+- Both `SAGE_ENABLED=false` and `SAGE_ALLOW_INVOICE_CREATE=false` verified in the live environment and PM2 process. Existing authentication/session settings and shared uploads preserved.
+- Temporary key removed; fresh SSH connection rejected; local private key deleted. No production seeds, cleanup or test business records created.
+- SharePoint review and proposed routing are recorded separately in `sharepoint-external-presales-plan.md`; no SharePoint files were created, moved or shared.
+
 ## Executive Summary
 
 The broader platform research has been implemented as a first, bounded workflow release rather than a Sage-only exercise. It simplifies daily work and project navigation, improves customer-linked visibility and scheduling, and adds the PM -> James -> Sage invoice-request foundation.
 
 **Live portal change completed:** Carl Smith's primary role is Sales. User permission level, active status and Microsoft linkage were retained; the saved role was reloaded and verified.
 
-**Not yet live:** all code changes in this branch. Production was not migrated, seeded or redeployed during this delivery. No real Sage invoice was created, no payment was recorded and no customer invoice was sent.
+**Now live:** the reviewed workflow code and additive schema. Sage remains disabled and unconnected. No real Sage invoice was created, no payment was recorded and no customer invoice was sent. SharePoint and external intake remain separate planned work.
 
 ## Delivered Code
 
@@ -59,7 +73,7 @@ No dependency package was added or changed. No role-model migration or destructi
 - `20261101010000_sage_readonly_accounting`: Sage connection, OAuth attempt and external invoice cache.
 - `20261101020000_project_invoice_approvals`: invoice-request status enum and project/user-linked request model, unique trigger/external-reference constraints and monetary checks.
 
-Both were applied to the local database only. Local migration history reports 29 migrations and is up to date. A schema comparison also identified a pre-existing `ProjectResourceAssignment.userId` foreign-key delete-action mismatch; this unrelated historical drift was not reset or silently repaired. Preserve/review the production migration baseline before release, including the previously recorded pre-sales migration variant.
+Both were applied locally and to production; migration status reports 29 current migrations. A local schema comparison also identified a pre-existing `ProjectResourceAssignment.userId` foreign-key delete-action mismatch; this unrelated historical drift was not reset or silently repaired. Production migration checksums were verified and the previously recorded pre-sales migration variant preserved.
 
 ## Validation
 
@@ -75,13 +89,13 @@ Both were applied to the local database only. Local migration history reports 29
 | Local browser | Work Queue, project hash/section views, customer-linked project, stage invoice request/rejection, Sage disabled state, schedule summary and summer-time navigation inspected. Project/work-queue mobile layout checked at 390px without page-level horizontal overflow. |
 | API unauthenticated check | Invoice request POST returned structured JSON 401. Unit tests cover 403, same-origin rejection and validation/error sanitisation. |
 | Live Sage | Not connected or financially tested; write calls mocked in tests. |
-| Live deployment | Not performed. |
+| Live deployment | Completed 1 November 2026 with Sage disabled; see the release record for checks and limitations. |
 
 Expected negative-path test logs include email/provider failures. Existing React test-harness warnings about server form actions and the Vite CommonJS deprecation remain; they are not production build failures. No new browser console errors were observed in the local preview. The disposable preview schema was explicitly removed; no production-test seed was run.
 
 ## James: Morning Decisions and Access
 
-1. Approve this first workflow release for a controlled deployment. Temporary VPS access was removed after previous work and has not been silently recreated. Back up the database/configuration, apply additive migrations and verify the release before switching live traffic.
+1. Completed: approved workflow release deployed with verified backups and migrations; temporary deployment access revoked afterwards. Team acceptance can start from the live Work Queue.
 2. Confirm the Sage Accounting business and authorise an application registration/callback. Browser sign-in alone is insufficient. Initial read-only scope is recommended; no consent has been granted on your behalf.
 3. Set James's exact active administrator user ID as invoice approver. Confirm sales ledger and 0%/20% VAT codes, customer mapping and existing project billing with Finance before enabling invoice creation.
 4. Run one controlled completed-stage invoice with James present after configuration. Check customer, amount, VAT and duplicate protection in Sage. Keep customer sending separate.

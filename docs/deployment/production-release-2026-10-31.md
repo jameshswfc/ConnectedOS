@@ -1,5 +1,7 @@
 # Production Release: 31 October 2026
 
+Superseded for active-release paths by [the 1 November workflow release](production-release-2026-11-01.md). Retained as deployment history.
+
 ## Latest Update: Combined Roles and User Archival
 
 This update supersedes the active-release location and user counts below; the original launch record remains for history.

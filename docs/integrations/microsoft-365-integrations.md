@@ -66,6 +66,8 @@ Used for:
 
 ## SharePoint Folder Naming
 
+The generic patterns below are record-folder suffixes, not authority to create a new top-level tree. The 1 November 2026 [verified folder review and routing plan](../sprints/sharepoint-external-presales-plan.md) maps sales to `Business Development`, pre-sales to `Pre-sales`, and projects to `Deployment` in the CH site's existing Documents library. Brand, region, partner, sub-brand and property mapping must follow the existing hierarchy; sales also has owner-based branches. This live integration remains planned, not enabled.
+
 Project folder pattern:
 
 ```text
