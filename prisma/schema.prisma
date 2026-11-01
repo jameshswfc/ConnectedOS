@@ -640,6 +640,87 @@ enum PresalesDeliverableType {
   other
 }
 
+model DocumentRoute {
+  id String @id @default(uuid()) @db.Uuid
+  hotelName String
+  brand String
+  location String
+  address String
+  propertyCode String?
+  partner String?
+  salesParentId String
+  presalesParentId String
+  projectsParentId String
+  completedParentId String
+  active Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  workspaces DocumentWorkspace[]
+  invitations PresalesInvitation[]
+  @@map("document_routes")
+}
+
+model DocumentWorkspace {
+  id String @id @default(uuid()) @db.Uuid
+  entityType String
+  entityId String @db.Uuid
+  routeId String? @db.Uuid
+  route DocumentRoute? @relation(fields: [routeId], references: [id])
+  folderId String?
+  webUrl String?
+  status String @default("awaiting_mapping")
+  lastError String?
+  archivedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([entityType, entityId])
+  @@map("document_workspaces")
+}
+
+model PresalesInvitation {
+  id String @id @default(uuid()) @db.Uuid
+  tokenHash String @unique
+  routeId String @db.Uuid
+  route DocumentRoute @relation(fields: [routeId], references: [id])
+  partner String
+  expiresAt DateTime
+  revokedAt DateTime?
+  requestWindowAt DateTime @default(now())
+  requestCount Int @default(0)
+  createdById String @db.Uuid
+  createdAt DateTime @default(now())
+  submission PartnerSubmission?
+  @@map("presales_invitations")
+}
+
+model PartnerSubmission {
+  id String @id @default(uuid()) @db.Uuid
+  invitationId String @unique @db.Uuid
+  invitation PresalesInvitation @relation(fields: [invitationId], references: [id])
+  details Json
+  status String @default("received")
+  presalesRequestId String? @unique @db.Uuid
+  createdAt DateTime @default(now())
+  reviewedAt DateTime?
+  reviewedById String? @db.Uuid
+  attachments PartnerAttachment[]
+  @@map("partner_submissions")
+}
+
+model PartnerAttachment {
+  id String @id @default(uuid()) @db.Uuid
+  submissionId String @db.Uuid
+  submission PartnerSubmission @relation(fields: [submissionId], references: [id])
+  fileName String
+  storageKey String @unique
+  sizeBytes Int
+  sha256 String
+  scanStatus String @default("quarantined")
+  documentId String? @unique @db.Uuid
+  createdAt DateTime @default(now())
+  @@map("partner_attachments")
+}
+
 model User {
   id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   microsoftId   String?  @unique @map("microsoft_id")
@@ -822,6 +903,8 @@ model Notification {
 }
 
 model Document {
+  sharepointItemId String?
+  sharepointSyncError String?
   id              String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   storageProvider DocumentStorageProvider @default(sharepoint) @map("storage_provider")
   externalId      String?                 @map("external_id")

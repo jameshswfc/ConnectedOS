@@ -558,7 +558,7 @@ Additive migrations: `20261101010000_sage_readonly_accounting` and `202611010200
 
 ## SharePoint and External Pre-Sales Intake Scope
 
-Added 1 November 2026; planned, not yet implemented. See [delivery scope and acceptance gates](sharepoint-external-presales-plan.md).
+Added 1 November 2026; implemented locally behind disabled activation flags, not yet live. See [delivery scope and acceptance gates](sharepoint-external-presales-plan.md) and [deployment runbook](../integrations/sharepoint-partner-intake.md).
 
 - Real SharePoint folder provisioning for opportunities, pre-sales, quotes and projects, with shared document storage, retries, record links and a non-destructive existing-file migration plan.
 - External hotel pre-sales submission form with supporting uploads, isolated intake review and links into the existing customer/opportunity/pre-sales workflow.
@@ -566,3 +566,7 @@ Added 1 November 2026; planned, not yet implemented. See [delivery scope and acc
 - The workflow release is live independently of these additions. Sage invoice writes remain disabled until separately approved and financially tested.
 - James approved Completed Sites archival on explicit fully-complete project closure. Preserve other active projects in shared hotel folders.
 - External forms should prefill verified hotel brand/location and partner invitation context, with confirmation and staff review for ambiguous matches.
+
+Local implementation includes additive migration `20261101120000_sharepoint_partner_intake`, five routing/intake models, document sync metadata, Graph provider, retryable worker, scoped folder panels, private seven-day invitations, submission review/conversion and quarantined attachments. Intake notifies James, Tim and Stephen by configured identity. Generated customer quote/proposal and project-form exports can be retained locally and copied later, behind a separate flag. Internal quote cost/margin exports are not copied automatically.
+
+Activation still requires selected-folder permission grants, private credentials, verified folder IDs, a malware scanner, edge request limits and a backed-up deployment/pilot. No production seed is part of this release. Sage stays disabled. Wider research-led work is tracked in the runbook rather than presented as delivered.

@@ -1,6 +1,6 @@
 # SharePoint Documents and External Pre-Sales Intake
 
-Added to scope on 1 November 2026. Status: planned, not implemented or enabled.
+Added to scope on 1 November 2026. Status: invitation intake, routing and Graph worker implemented locally; production activation remains gated. See [implementation and activation runbook](../integrations/sharepoint-partner-intake.md). The original requirements below remain the acceptance scope, not a claim that live grants or migration have happened.
 
 ## Release Order
 
@@ -51,7 +51,7 @@ The live inspection confirms paths only. Drive/item IDs, API grants, access inhe
 
 ### Fully Complete Project Archival
 
-Decision confirmed by James on 1 November 2026; implementation remains pending.
+Decision confirmed by James on 1 November 2026; implemented against explicit `closed` status, awaiting live folder pilot.
 
 - Trigger on an authorised explicit fully-complete/closure action, not merely automatic completion of all tasks. Map this action to the existing lifecycle during implementation.
 - Move the project's document folder to the verified existing Completed Sites folder under its appropriate region/brand branch. Keep the project record and all historical links available in ConnectedOS.
@@ -94,11 +94,11 @@ Submission flow:
 5. Notify the configured intake owner. Staff review and link an existing account/opportunity, or create approved master records; do not guess an account from an email domain or create duplicate opportunities automatically.
 6. Convert/link to the normal pre-sales request, preserving source files and history. The engineer uses the existing checklist and deliverables workflow. External access cannot reveal internal comments, prices or unrelated documents.
 
-Richard is the suggested review owner, subject to confirmation. External confirmation email requires real email delivery configuration and testing; the existing console provider is not delivery.
+James confirmed notification recipients are **James, Tim and Stephen**. Configure their exact active ConnectedOS user IDs, not fuzzy display-name matching. External confirmation email requires real email delivery configuration and testing; the existing console provider is not delivery.
 
 ### Hotel and Partner Prefill
 
-James requested automatic identification where possible on 1 November 2026. Planned behaviour:
+James requested automatic identification where possible on 1 November 2026. Invitation/property-based prefill is implemented; document extraction remains deferred:
 
 - Prefill brand, sub-brand, location and property code from verified property mappings or a property-specific invitation. Show the requester the values for confirmation/correction.
 - Derive the referring partner from the server-side invitation context where available. Otherwise ask explicitly; do not infer partner identity from hotel brand or an email domain alone.

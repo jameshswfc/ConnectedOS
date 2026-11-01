@@ -9,6 +9,7 @@ import { createAuditLog } from "@/services/audit/audit-service";
 import { assertQuotePermission } from "@/modules/quoting/quotes/quote-permissions";
 import { assertQuoteVersionExportable } from "@/modules/quoting/quotes/quote-approval-service";
 import type { CrmAccessContext } from "@/modules/crm/types/crm-context";
+import { captureGeneratedDocument } from "@/services/documents/capture-generated-document";
 
 type ExportLine = {
   lineType: string;
@@ -95,6 +96,7 @@ export async function exportQuotePdf(context: CrmAccessContext, quoteId: string,
   }
   const filename = `${version.quote.quoteNumber}-v${version.versionNumber}.pdf`;
   await recordQuoteExport(context, quoteId, versionId, QuoteExportType.pdf_quote, filename);
+  await captureGeneratedDocument({ entityType: "Quote", entityId: quoteId, userId: context.userId, filename, buffer });
   return { filename, contentType: "application/pdf", buffer };
 }
 
@@ -104,6 +106,7 @@ export async function exportQuoteLongProposalPptx(context: CrmAccessContext, quo
   const buffer = await generateLongProposalPptxBuffer(version as ExportVersion);
   const filename = `${version.quote.quoteNumber}-v${version.versionNumber}-long-proposal.pptx`;
   await recordQuoteExport(context, quoteId, versionId, QuoteExportType.long_proposal_pptx, filename);
+  await captureGeneratedDocument({ entityType: "Quote", entityId: quoteId, userId: context.userId, filename, buffer });
   return { filename, contentType: "application/vnd.openxmlformats-officedocument.presentationml.presentation", buffer };
 }
 
@@ -113,6 +116,7 @@ export async function exportQuoteLongProposalPdf(context: CrmAccessContext, quot
   const buffer = await generateLongProposalPdfBuffer(version as ExportVersion);
   const filename = `${version.quote.quoteNumber}-v${version.versionNumber}-long-proposal.pdf`;
   await recordQuoteExport(context, quoteId, versionId, QuoteExportType.long_proposal_pdf, filename);
+  await captureGeneratedDocument({ entityType: "Quote", entityId: quoteId, userId: context.userId, filename, buffer });
   return { filename, contentType: "application/pdf", buffer };
 }
 

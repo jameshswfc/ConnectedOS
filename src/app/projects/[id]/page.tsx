@@ -23,6 +23,7 @@ import { dependencyReason } from "@/modules/projects/project-dependency-scheduli
 import { ProjectBadge } from "@/modules/projects/ui/project-badge";
 import { AddDefaultDependenciesButton, AddDefaultTasksButton, CreateChangeQuoteButton, ProjectChangeRequestActionButtons, ProjectFinancialQuickForm, ProjectFormQuickForm, ProjectIssueQuickForm, ProjectLockPlanButton, ProjectMilestoneActionButtons, ProjectMilestoneInlineEditForm, ProjectResourceDeleteButton, ProjectResourceQuickForm, ProjectStageGateActionButtons, ProjectTaskActionButtons, ProjectTaskDependencyCreateForm, ProjectTaskDependencyDeleteButton, ProjectTaskInlineEditForm, ProjectTaskQuickForm } from "@/modules/projects/ui/project-actions";
 import { formatProjectDate, formatProjectMoney, formatProjectNumber, projectLabel } from "@/modules/projects/ui/project-format";
+import { DocumentWorkspacePanel } from "@/components/documents/document-workspace-panel";
 
 type PageProps = { params: Promise<{ id: string }> };
 type ProjectData = Awaited<ReturnType<typeof getProject>>;
@@ -51,6 +52,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
   try { assertCanEditProject(context, project); } catch { canEdit = false; }
   return (
       <AppShell title={`${project.projectNumber} - ${project.name}`} userName={userName}>
+        <DocumentWorkspacePanel entityType="Project" entityId={project.id} />
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           {canEdit ? <Link href={`/projects/${project.id}/edit`}><Button>Edit Project</Button></Link> : null}
           {canRequestProjectInvoice(context, project) ? <Link href={`/finance/invoice-requests/new?projectId=${project.id}`}><Button variant="secondary">Request Invoice</Button></Link> : null}

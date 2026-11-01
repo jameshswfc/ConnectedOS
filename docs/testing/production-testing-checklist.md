@@ -1,5 +1,22 @@
 # Production Testing Checklist
 
+## SharePoint and Private Partner Intake Pilot
+
+Do not enable production flags before the [activation runbook](../integrations/sharepoint-partner-intake.md) gates pass. Use a reviewed pilot property and retain backups; never run production-test seeds as deployment steps.
+
+1. Confirm the document-only app has selected-files consent, explicit approved-folder grants and no tenant-wide file/site permissions. Verify access outside those roots fails.
+2. Map one property's sales, pre-sales, deployment and existing Completed Sites item IDs. Create a linked opportunity/request/quote/project and run the document worker twice. Each record must have one child folder, not two.
+3. Disconnect Graph temporarily. Record creation must still work; folder state must stay pending/retry-required. Restore access and verify recovery without duplicate folders.
+4. Upload two files with the same display name and confirm both local originals remain distinct. Verify eligible new files copy with metadata, original downloads still work and historical files before the configured cutoff are untouched.
+5. Close only the pilot project. Verify only its child folder moves, the hotel and other active projects stay put, and its record/document links still work. Automatic task-completed status alone must not archive.
+6. Create a private invitation, check hotel/brand/location/partner prefill on desktop and mobile, correct a field, submit once and reload. The same receipt must appear with no duplicate submission or notifications.
+7. Verify James, Tim and Stephen each receive an in-app notification linking to the intake review. Confirm real email delivery separately; console output is not delivery.
+8. Test expired/revoked links, wrong token, request limits, oversized files and unsupported Office/macro files. Failures must be friendly and reveal no internal directory or other request data.
+9. With the scanner missing, uploaded files must remain quarantined and unavailable to download or copy. With scanning configured, clean files can be reviewed; rejected files remain inaccessible.
+10. Review and confirm the property mapping, choose a permitted account/opportunity and convert. Check one normal pre-sales request, existing stage automation, deliverables, source audit and clean attachments. A conflicting opportunity hotel mapping must be rejected.
+11. Test review/routing APIs with a normal user: proper JSON denial, no route editing or file leakage. Direct SharePoint links must also respect the intended SharePoint audience.
+12. Revoke the pilot invitation and remove only explicitly identified local/pilot fixtures. Record outstanding retention, scanner and email operational checks before wider invitation use.
+
 ## Restart Release: Microsoft Login and Sales Journey
 
 - Run `npm run test:journey` against a local database. Confirm the isolated end-to-end check passes and leaves the normal dataset untouched.

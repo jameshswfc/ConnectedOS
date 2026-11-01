@@ -9,6 +9,7 @@ import { displayLabel, generateProjectPdfBuffer, getProjectLogoDataUri, projectE
 import { projectLabel } from "@/modules/projects/ui/project-format";
 import { createAuditLog } from "@/services/audit/audit-service";
 import type { CrmAccessContext } from "@/modules/crm/types/crm-context";
+import { captureGeneratedDocument } from "@/services/documents/capture-generated-document";
 
 export async function exportProjectFormPdf(context: CrmAccessContext, projectId: string, formIdOrType: string) {
   assertProjectPermission(context, "projects.export");
@@ -23,6 +24,7 @@ export async function exportProjectFormPdf(context: CrmAccessContext, projectId:
   let buffer: Buffer;
   try {
     buffer = await generateProjectPdfBuffer(project, form.title, formContent);
+    await captureGeneratedDocument({ entityType: "Project", entityId: projectId, userId: context.userId, filename: `${project.projectNumber}-${form.formType}.pdf`, buffer });
   } catch (error) {
     await logProjectExportFailure(context, projectId, `${form.formType}_pdf`, error);
     throw new ProjectExportGenerationError();
@@ -41,6 +43,7 @@ export async function exportImplementationDocumentPdf(context: CrmAccessContext,
   let buffer: Buffer;
   try {
     buffer = await generateProjectPdfBuffer(project, "Implementation Document", content);
+    await captureGeneratedDocument({ entityType: "Project", entityId: projectId, userId: context.userId, filename: `${project.projectNumber}-implementation-document.pdf`, buffer });
   } catch (error) {
     await logProjectExportFailure(context, projectId, "implementation_document_pdf", error);
     throw new ProjectExportGenerationError();

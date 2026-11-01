@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "documents:sync": "node --env-file=.env --import tsx scripts/sync-document-workspaces.ts",
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getCrmPageContext } from "@/modules/crm/ui/crm-page-context";
+import { canManagePartnerIntake } from "@/services/documents/document-routing";
 import { getPresalesDashboard } from "@/modules/presales/presales-service";
 import {
   formatPresalesDate,
@@ -21,6 +22,7 @@ export default async function PresalesPage() {
   const dashboard = await getPresalesDashboard(context);
   return (
     <AppShell title="Pre-Sales" userName={userName}>
+      {canManagePartnerIntake(context) && <Link href="/presales/intake" className="mb-4 inline-block font-medium text-brand-700">Partner submissions</Link>}
       <div className="mb-4 flex flex-wrap justify-end gap-2"><Link href="/presales/my-work"><Button variant="secondary">My Work</Button></Link><Link href="/presales/new"><Button>New Request</Button></Link></div>
       <div className="grid gap-4 md:grid-cols-5">
         <Metric title="Assigned Requests" value={dashboard.assignedRequests} />

@@ -15,6 +15,7 @@ import { QuoteStatusBadge } from "@/modules/quoting/ui/quote-status-badge";
 import { formatPresalesDate, PresalesRagBadge, PresalesStatusBadge, presalesTypeLabel } from "@/modules/presales/ui/presales-format";
 
 type PageProps = { params: Promise<{ id: string }> };
+import { DocumentWorkspacePanel } from "@/components/documents/document-workspace-panel";
 
 export default async function OpportunityDetailPage({ params }: PageProps) {
   const { context, userName } = await getCrmPageContext();
@@ -26,6 +27,7 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
   const openPresales = opportunity.presalesRequests.find((request) => !["complete", "cancelled"].includes(request.status));
   return (
     <AppShell title={opportunity.opportunityName} userName={userName}>
+      <DocumentWorkspacePanel entityType="Opportunity" entityId={opportunity.id} />
       <div className="mb-4 flex justify-end gap-2">
         {canEdit ? <Link href={`/crm/opportunities/${opportunity.id}/edit`}><Button variant="secondary">Edit Opportunity</Button></Link> : null}
       </div>
