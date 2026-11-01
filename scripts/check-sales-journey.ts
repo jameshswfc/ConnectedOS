@@ -19,6 +19,8 @@ async function main() {
     url.searchParams.set("schema", schema);
     process.env.DATABASE_URL = url.toString();
     process.env.EMAIL_PROVIDER = "disabled";
+    process.env.SAGE_ENABLED = "false";
+    process.env.SAGE_ALLOW_INVOICE_CREATE = "false";
     execFileSync(process.execPath, ["node_modules/prisma/build/index.js", "db", "push", "--skip-generate"], { env: process.env, stdio: "pipe" });
     const { prisma } = await import("../src/lib/prisma");
     disconnect = () => prisma.$disconnect();
@@ -69,11 +71,28 @@ async function main() {
     assert.equal(Number(project.totalResourceDaysBudget), 5);
     assert.equal(Number(project.commercialValue), 2500);
     assert.ok(project.tasks.length >= 11);
+    const reviewTask = project.tasks.find((task) => task.title === "Project Documentation Review")!;
+    const deploymentTask = project.tasks.find((task) => task.title === "Deployment Commenced")!;
+    assert.ok(deploymentTask.startDate > reviewTask.endDate, "Default dependencies must preserve the delivery plan spacing");
     assert.equal((await prisma.opportunity.findUniqueOrThrow({ where: { id: converted.opportunityId } })).stage, "closed_won_po_received");
     assert.equal(await prisma.presalesRequest.count(), 1);
     assert.ok(await prisma.auditLog.count() > 0);
     assert.ok(await prisma.notification.count() > 0);
     console.log("PASS: lead -> opportunity -> pre-sales -> reviewed quote -> sent -> accepted -> single linked project; ownership, scope, budget, tasks, history and notifications verified.");
+    const { requestProjectInvoice, approveProjectInvoice, rejectProjectInvoice } = await import("../src/modules/finance/invoice-request-service");
+    process.env.PROJECT_INVOICE_APPROVER_USER_ID = approver.id;
+    await prisma.project.update({ where: { id: project.id }, data: { status: "completed", projectManagerId: owner.id } });
+    const invoiceInput = { projectId: project.id, triggerKey: "project", description: "Completed engineering stage", netAmount: "100.00", taxRate: "20" };
+    const invoice = await requestProjectInvoice(context, invoiceInput);
+    assert.equal(invoice.totalAmount.toFixed(2), "120.00");
+    assert.equal((await requestProjectInvoice(context, invoiceInput)).id, invoice.id);
+    assert.equal(await prisma.projectInvoiceRequest.count(), 1);
+    await assert.rejects(() => approveProjectInvoice(context, invoice.id, {}), /Missing permission/);
+    await rejectProjectInvoice({ ...context, userId: approver.id }, invoice.id, "Please confirm customer billing instructions");
+    assert.equal((await requestProjectInvoice(context, invoiceInput)).status, "requested");
+    assert.equal(await prisma.projectInvoiceRequest.count(), 1);
+    console.log("PASS: project completion -> invoice request -> designated approver -> rejection/resubmission; duplicate requests prevented, no Sage financial calls.");
+
   } finally {
     await disconnect?.();
     if (created) await admin.$executeRawUnsafe(`DROP SCHEMA "${schema}" CASCADE`);

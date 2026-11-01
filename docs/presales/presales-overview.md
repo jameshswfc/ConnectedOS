@@ -4,6 +4,17 @@
 
 The pre-sales module controls internal requests for technical input, design support, document review, RFP analysis, surveys, consultancy and quote support.
 
+## Private Partner Submissions
+
+The invitation-only intake at `/presales/intake` and `/submit/presales` is implemented locally, behind `PARTNER_INTAKE_ENABLED`; it is not yet activated on the live portal. See the [configuration and pilot runbook](../integrations/sharepoint-partner-intake.md).
+
+- Seven-day revocable links prefill a verified hotel's brand, location, address and property code, with referring partner taken from the invitation.
+- Partners may correct details and submit scope/contact information, but cannot choose internal account IDs, routing destinations or engineers.
+- Staff confirm hotel mapping and link a permitted account/opportunity before creating the normal pre-sales request. Review conversion is duplicate-protected.
+- James, Tim and Stephen receive submission notifications through explicitly configured active identities.
+- Attachments remain quarantined until scanning passes. The pilot accepts PDF, PNG, JPEG and text only; Office/macro and CAD formats are deferred.
+- Existing deliverables and request automation remain in place. Verified SharePoint workspace mapping follows the opportunity/request/project journey without moving shared hotel folders.
+
 ## Request Types
 
 - Wi-Fi design.

@@ -1,8 +1,8 @@
 import type { NavigationItem } from "./navigation-items";
 
 const groups = [
-  { label: "My Work", paths: ["/dashboard", "/crm/my-work", "/leave", "/expenses", "/notifications", "/settings"] },
-  { label: "Sales", paths: ["/crm/pipeline", "/crm/leads", "/crm/opportunities", "/quotes", "/crm/accounts", "/crm/contacts", "/crm/activities", "/crm/forecast"] },
+  { label: "My Work", paths: ["/dashboard", "/work", "/leave", "/expenses", "/notifications", "/settings"] },
+  { label: "Sales", paths: ["/crm/my-work", "/crm/pipeline", "/crm/leads", "/crm/opportunities", "/quotes", "/crm/accounts", "/crm/contacts", "/crm/activities", "/crm/forecast"] },
   { label: "Pre-Sales", paths: ["/presales"] },
   { label: "Projects", paths: ["/projects"] },
   { label: "Scheduling", paths: ["/field-services"] },

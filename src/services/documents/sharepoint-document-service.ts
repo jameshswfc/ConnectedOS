@@ -1,4 +1,5 @@
 import path from "node:path";
+import { randomUUID } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { prisma } from "@/lib/prisma";
 
@@ -77,13 +78,13 @@ export async function uploadFileToSharePointStub(input: StoredUploadInput) {
   }
   const fileName = sanitizeStoredFileName(input.fileName);
   assertAllowedExtension(fileName, input.allowedExtensions ?? DEFAULT_ALLOWED_EXTENSIONS);
-  const { safeFolderPath, relativePath, absolutePath } = resolveStoragePath(input.folderPath, fileName);
+  const { safeFolderPath, relativePath, absolutePath } = resolveStoragePath(input.folderPath, `${randomUUID()}-${fileName}`);
   await mkdir(path.dirname(absolutePath), { recursive: true });
   await writeFile(absolutePath, input.buffer);
 
   return prisma.document.create({
     data: {
-      storageProvider: "sharepoint",
+      storageProvider: "other",
       externalId: relativePath,
       webUrl: buildSharePointStyleUrl(`${safeFolderPath}/${fileName}`),
       folderPath: safeFolderPath,

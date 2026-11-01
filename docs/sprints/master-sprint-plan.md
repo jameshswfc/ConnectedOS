@@ -539,3 +539,42 @@ Deferred:
 - Archive removes inactive users from normal administration lists while preserving records, audit history and blocked Microsoft identities.
 - No production test seed or reset is required for this deployment. Apply only the additive migration and separately reviewed user changes.
 - Validate with unit tests, lint, build, Prisma validation/status and `npm run test:user-roles` against a local database.
+
+## Connected Workflow and Sage Approval Delivery
+
+Research-led changes are recorded in `docs/research/connected-workflow-platform-review.md`, covering Odoo, Salesforce, HubSpot, Pipedrive, Asana, monday.com, Float, Zoho, Dynamics 365 Field Service, ServiceM8, QuoteWerks and ConnectWise CPQ.
+
+Implemented and deployed on 1 November 2026, with Sage disconnected and both Sage toggles disabled (see `docs/deployment/production-release-2026-11-01.md`):
+
+- Shared permission-scoped Work Queue and stage-aware opportunity next steps.
+- Customer-linked projects and restricted child-record/count visibility.
+- Focused project views with preserved deep links and existing forms.
+- Central schedule coverage summary; retained inactive-history filters; British Summer Time calendar-link correction.
+- Default dependencies preserve planned task spacing instead of collapsing template dates.
+- Sage Accounting OAuth, encrypted tokens and business-scoped invoice snapshots, disabled by default.
+- Completed project/stage invoice requests, designated James approval, one controlled Sage POST, audit/notifications and uncertain-result reconciliation hold.
+
+Additive migrations: `20261101010000_sage_readonly_accounting` and `20261101020000_project_invoice_approvals`. No production seed/reset is part of deployment. See `connected-workflow-sage-handover.md` for validation and live deployment gates. Document-assisted pre-sales, Hilton CBOM automation, true hourly capacity and wider Sage financial operations remain separate work, not delivered claims.
+
+## SharePoint and External Pre-Sales Intake Scope
+
+Added 1 November 2026; subsequently deployed as the single-mapping XTEST pilot with Sage/export capture disabled. The live browser submission, three notifications, scan, review, SharePoint copy and repeat-safe worker passed. See [live pilot evidence and remaining gates](../testing/xtest-intake-live-pilot.md), [delivery scope](sharepoint-external-presales-plan.md) and [deployment runbook](../integrations/sharepoint-partner-intake.md).
+
+- Real SharePoint folder provisioning for opportunities, pre-sales, quotes and projects, with shared document storage, retries, record links and a non-destructive existing-file migration plan.
+- External hotel pre-sales submission form with supporting uploads, isolated intake review and links into the existing customer/opportunity/pre-sales workflow.
+- Recommended invitation-only pilot; selected SharePoint locations, explicit Microsoft consent and upload security acceptance required before live activation.
+- The workflow release is live independently of these additions. Sage invoice writes remain disabled until separately approved and financially tested.
+- James approved Completed Sites archival on explicit fully-complete project closure. Preserve other active projects in shared hotel folders.
+- External forms should prefill verified hotel brand/location and partner invitation context, with confirmation and staff review for ambiguous matches.
+
+Local implementation includes additive migration `20261101120000_sharepoint_partner_intake`, five routing/intake models, document sync metadata, Graph provider, retryable worker, scoped folder panels, private seven-day invitations, submission review/conversion and quarantined attachments. Intake notifies James, Tim and Stephen by configured identity. Generated customer quote/proposal and project-form exports can be retained locally and copied later, behind a separate flag. Internal quote cost/margin exports are not copied automatically.
+
+Activation still requires selected-folder permission grants, private credentials, verified folder IDs, a malware scanner, edge request limits and a backed-up deployment/pilot. No production seed is part of this release. Sage stays disabled. Wider research-led work is tracked in the runbook rather than presented as delivered.
+
+### XTEST Pilot Follow-up
+
+- Restricted credentials and root grants were verified; synthetic live create/upload/retry and Completed Sites move passed. These are not evidence of general activation.
+- XTEST / Test Hotel / Tempo by Hilton / UK / Reivernet is the approved next property-specific pilot, with no external invitation delivery.
+- Local browser upload, receipt, three-recipient notifications, quarantine and reviewed-request mapping passed in an isolated schema. Added repeatable `test:partner-intake` command.
+- Prepared scanner timeout headroom, per-file failure isolation, skip of already-clean unreviewed attachments, upload outcome reporting and independent feature-flag enforcement.
+- James approved an XTEST-only deployment, with Sage disabled and temporary access revoked afterwards. Deployment remains pending until server access, backups, mapping, proxy limits and live checks are complete. No new migration beyond the prepared document/intake migration.

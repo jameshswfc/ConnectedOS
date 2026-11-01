@@ -39,6 +39,11 @@ export function endOfMonthGrid(value: Date) {
 
 export function parseCalendarDate(value?: string) {
   if (!value) return startOfDay(new Date());
+  const parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (parts) {
+    const local = new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3]));
+    return toDateParam(local) === value ? local : startOfDay(new Date());
+  }
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return startOfDay(new Date());
   return startOfDay(parsed);
@@ -80,7 +85,8 @@ export function formatCalendarWeekLabel(value: Date) {
 }
 
 export function toDateParam(value: Date) {
-  return startOfDay(value).toISOString().slice(0, 10);
+  // Calendar navigation is a local date, not a UTC instant (BST can cross midnight).
+  return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
 }
 
 export function isSameDay(left: Date, right: Date) {

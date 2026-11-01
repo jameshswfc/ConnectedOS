@@ -16,6 +16,7 @@ import { formatPresalesDate, PresalesRagBadge, PresalesStatusBadge, presalesType
 import { CreateProjectFromQuoteButton } from "@/modules/projects/ui/project-actions";
 
 type PageProps = { params: Promise<{ id: string }> };
+import { DocumentWorkspacePanel } from "@/components/documents/document-workspace-panel";
 
 export default async function QuoteDetailPage({ params }: PageProps) {
   const { context, userName } = await getCrmPageContext();
@@ -26,6 +27,7 @@ export default async function QuoteDetailPage({ params }: PageProps) {
   const canApprove = context.permissions.includes("quotes.approve") && canApproveQuoteRequest(context, quote.ownerId, pendingApproval?.requestedById);
   return (
     <AppShell title={`${quote.quoteNumber} - ${quote.title}`} userName={userName}>
+      <DocumentWorkspacePanel entityType="Quote" entityId={quote.id} />
       <div className="mb-4 flex flex-wrap justify-end gap-2"><Link href={`/presales/new?quoteId=${quote.id}`}><Button>Pre-Sales Request</Button></Link><CreateProjectFromQuoteButton quoteId={quote.id} disabled={!["approved", "sent", "accepted"].includes(quote.status)} /><CreateQuoteVersionButton quoteId={quote.id} /><Link href={`/quotes/${quote.id}/edit`}><Button variant="secondary">Edit Quote</Button></Link></div>
       <div className="grid gap-4 lg:grid-cols-3">
         <Card><CardHeader><CardTitle>Summary</CardTitle></CardHeader><CardContent className="space-y-2 text-sm"><p>Account: {quote.account.name}</p><p>Opportunity: {quote.opportunity ? <Link href={`/crm/opportunities/${quote.opportunity.id}`} className="font-medium text-brand-700">{quote.opportunity.opportunityName}</Link> : "-"}</p><p>Contact: {quote.contact ? `${quote.contact.firstName} ${quote.contact.lastName}` : "-"}</p><p>Status: <QuoteStatusBadge status={quote.status} /></p><p>Owner: {quote.owner.displayName}</p><p>Project: {quote.projectName ?? quote.title}</p></CardContent></Card>

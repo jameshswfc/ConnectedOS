@@ -1365,7 +1365,8 @@ async function createMissingDefaultProjectDependencies(
       changedTaskId: rootTask.id,
       tasks,
       dependencies: existingDependencies,
-      milestones: []
+      milestones: [],
+      preserveLaterDates: true
     });
 
     for (const update of scheduleChanges.taskUpdates) {

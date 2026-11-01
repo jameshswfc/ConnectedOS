@@ -1,4 +1,5 @@
 import path from "node:path";
+import { randomUUID } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 
 export const PRESALES_ALLOWED_FILE_EXTENSIONS = [".pdf", ".docx", ".xlsx", ".pptx", ".png", ".jpg", ".jpeg", ".csv", ".txt"] as const;
@@ -50,10 +51,10 @@ export function buildPresalesStoredFilePath(input: { requestNumber: string; file
 
 export async function savePresalesUploadBuffer(input: { requestNumber: string; fileName: string; buffer: Buffer; year?: number; storageRoot?: string }) {
   assertAllowedPresalesFile(input.fileName, input.buffer.byteLength);
-  const target = buildPresalesStoredFilePath(input);
+  const target = buildPresalesStoredFilePath({ ...input, fileName: `${randomUUID()}-${input.fileName}` });
   await mkdir(path.dirname(target.absolutePath), { recursive: true });
   await writeFile(target.absolutePath, input.buffer);
-  return target;
+  return { ...target, fileName: sanitizePresalesFileName(input.fileName) };
 }
 
 export async function readPresalesStoredFile(relativePath: string, storageRoot = process.cwd()) {

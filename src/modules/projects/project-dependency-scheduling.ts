@@ -78,6 +78,7 @@ export function cascadeDependencySchedule(input: {
   tasks: TaskLike[];
   dependencies: DependencyLike[];
   milestones?: MilestoneLike[];
+  preserveLaterDates?: boolean;
 }) {
   const activeTasks = input.tasks.filter((task) => !task.deletedAt);
   const taskById = new Map(activeTasks.map((task) => [task.id, { ...task }]));
@@ -97,6 +98,11 @@ export function cascadeDependencySchedule(input: {
       const successor = taskById.get(dependency.successorTaskId);
       if (!predecessor || !successor) continue;
       const nextDates = calculateDependentTaskDates(predecessor, successor, dependency.dependencyType, Number(dependency.lagDays ?? 0));
+      // Adding default links must not erase the template's deliberate delivery buffers.
+      if (input.preserveLaterDates && nextDates.startDate <= successor.startDate && nextDates.endDate <= successor.endDate) {
+        queue.push(successor.id);
+        continue;
+      }
       if (
         sameDay(successor.startDate, nextDates.startDate)
         && sameDay(successor.endDate, nextDates.endDate)
@@ -188,5 +194,5 @@ export function dependencyTypeLabel(value: ProjectDependencyType | string) {
 }
 
 function sameDay(left: Date, right: Date) {
-  return left.toISOString().slice(0, 10) === right.toISOString().slice(0, 10);
+  return left.getFullYear() === right.getFullYear() && left.getMonth() === right.getMonth() && left.getDate() === right.getDate();
 }

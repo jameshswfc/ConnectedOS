@@ -8,12 +8,14 @@ import { getStageLabel } from "@/modules/crm/opportunities/opportunity-stages";
 import { getOpportunityTypeLabel } from "@/modules/crm/opportunities/opportunity-types";
 import { OpportunityHealthBadge } from "@/modules/crm/ui/opportunity-health-badge";
 import { SalesJourney } from "@/modules/crm/ui/sales-journey";
+import { OpportunityNextStep } from "@/modules/crm/ui/opportunity-next-step";
 import { formatDate, formatMoney, labelFromValue } from "@/modules/crm/ui/crm-format";
 import { getCrmPageContext } from "@/modules/crm/ui/crm-page-context";
 import { QuoteStatusBadge } from "@/modules/quoting/ui/quote-status-badge";
 import { formatPresalesDate, PresalesRagBadge, PresalesStatusBadge, presalesTypeLabel } from "@/modules/presales/ui/presales-format";
 
 type PageProps = { params: Promise<{ id: string }> };
+import { DocumentWorkspacePanel } from "@/components/documents/document-workspace-panel";
 
 export default async function OpportunityDetailPage({ params }: PageProps) {
   const { context, userName } = await getCrmPageContext();
@@ -25,9 +27,11 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
   const openPresales = opportunity.presalesRequests.find((request) => !["complete", "cancelled"].includes(request.status));
   return (
     <AppShell title={opportunity.opportunityName} userName={userName}>
+      <DocumentWorkspacePanel entityType="Opportunity" entityId={opportunity.id} />
       <div className="mb-4 flex justify-end gap-2">
         {canEdit ? <Link href={`/crm/opportunities/${opportunity.id}/edit`}><Button variant="secondary">Edit Opportunity</Button></Link> : null}
       </div>
+      <OpportunityNextStep opportunity={opportunity} canEdit={canEdit} />
       <SalesJourney steps={[
         { title: "Lead / Opportunity", emptyLabel: "Opportunity created directly", records: [
           ...opportunity.linkedLeads.map((lead) => ({ id: lead.id, label: lead.accountName ?? "Original lead", status: lead.status, href: `/crm/leads/${lead.id}` })),

@@ -9,6 +9,7 @@ import { PresalesAssignForm, PresalesCommentForm, PresalesDeliverableForm, Presa
 import { formatPresalesDate, formatPresalesMoney, PresalesRagBadge, PresalesSlaBadge, PresalesStatusBadge, presalesCategoryLabel, presalesCommercialPriorityLabel, presalesPriorityLabel, presalesTypeLabel } from "@/modules/presales/ui/presales-format";
 
 type PageProps = { params: Promise<{ id: string }> };
+import { DocumentWorkspacePanel } from "@/components/documents/document-workspace-panel";
 
 export default async function PresalesDetailPage({ params }: PageProps) {
   const { context, userName } = await getCrmPageContext();
@@ -18,6 +19,7 @@ export default async function PresalesDetailPage({ params }: PageProps) {
   const readOnly = isPresalesComplete(request.status);
   return (
     <AppShell title={`${request.requestNumber} - ${request.account.name}`} userName={userName}>
+      <DocumentWorkspacePanel entityType="PresalesRequest" entityId={request.id} />
       <div className="grid gap-4 lg:grid-cols-3">
         <Card><CardHeader><CardTitle>Summary</CardTitle></CardHeader><CardContent className="space-y-2 text-sm"><p>Account: <Link href={`/crm/accounts/${request.account.id}`} className="font-medium text-brand-700">{request.account.name}</Link></p><p>Opportunity: {request.opportunity ? <Link href={`/crm/opportunities/${request.opportunity.id}`} className="font-medium text-brand-700">{request.opportunity.opportunityName}</Link> : "-"}</p><p>Quote: {request.quote ? <Link href={`/quotes/${request.quote.id}`} className="font-medium text-brand-700">{request.quote.quoteNumber}</Link> : "-"}</p><p>Category: {presalesCategoryLabel(request.requestCategory)}</p><p>Type: {presalesTypeLabel(request.requestType)}</p><p>Priority: {presalesPriorityLabel(request.priority)}</p><p>Commercial Priority: {presalesCommercialPriorityLabel(request.commercialPriority)}</p></CardContent></Card>
         <Card><CardHeader><CardTitle>Status</CardTitle></CardHeader><CardContent className="space-y-2 text-sm"><p>Status: <PresalesStatusBadge status={request.status} /></p><p>SLA: <PresalesSlaBadge status={request.slaStatus} /></p><p>RAG: <PresalesRagBadge status={request.ragStatus} /></p><p>Assigned: {request.assignedTo?.displayName ?? "Unassigned"}</p><p>Internal deadline: {formatPresalesDate(request.internalDeadline)}</p><p>Completed: {formatPresalesDate(request.completedAt)}</p></CardContent></Card>

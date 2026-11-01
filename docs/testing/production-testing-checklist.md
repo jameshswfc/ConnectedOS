@@ -1,5 +1,31 @@
 # Production Testing Checklist
 
+## SharePoint and Private Partner Intake Pilot
+
+The [XTEST live pilot](xtest-intake-live-pilot.md) is deployed and verified. Do not expand beyond its single reviewed hotel mapping before the remaining [activation runbook](../integrations/sharepoint-partner-intake.md) gates pass. Retain backups; never run production-test seeds as deployment steps.
+
+1. Confirm the document-only app has selected-files consent, explicit approved-folder grants and no tenant-wide file/site permissions. Verify access outside those roots fails.
+2. Map one property's sales, pre-sales, deployment and existing Completed Sites item IDs. Create a linked opportunity/request/quote/project and run the document worker twice. Each record must have one child folder, not two.
+3. Disconnect Graph temporarily. Record creation must still work; folder state must stay pending/retry-required. Restore access and verify recovery without duplicate folders.
+4. Upload two files with the same display name and confirm both local originals remain distinct. Verify eligible new files copy with metadata, original downloads still work and historical files before the configured cutoff are untouched.
+5. Close only the pilot project. Verify only its child folder moves, the hotel and other active projects stay put, and its record/document links still work. Automatic task-completed status alone must not archive.
+6. Create a private invitation, check hotel/brand/location/partner prefill on desktop and mobile, correct a field, submit once and reload. The same receipt must appear with no duplicate submission or notifications.
+7. Verify James, Tim and Stephen each receive an in-app notification linking to the intake review. Confirm real email delivery separately; console output is not delivery.
+8. Test expired/revoked links, wrong token, request limits, oversized files and unsupported Office/macro files. Failures must be friendly and reveal no internal directory or other request data.
+9. With the scanner missing, uploaded files must remain quarantined and unavailable to download or copy. With scanning configured, clean files can be reviewed; rejected files remain inaccessible.
+10. Review and confirm the property mapping, choose a permitted account/opportunity and convert. Check one normal pre-sales request, existing stage automation, deliverables, source audit and clean attachments. A conflicting opportunity hotel mapping must be rejected.
+11. Test review/routing APIs with a normal user: proper JSON denial, no route editing or file leakage. Direct SharePoint links must also respect the intended SharePoint audience.
+12. Revoke the pilot invitation and remove only explicitly identified local/pilot fixtures. Record outstanding retention, scanner and email operational checks before wider invitation use.
+
+XTEST follow-up:
+
+- Run `npm run test:partner-intake` locally. It uses and removes an isolated schema, not the normal dataset. Optional `-- --browser` mode opens port 3012 for one synthetic attachment submission.
+- Confirm prefill: Test Hotel, XTEST, Tempo by Hilton, UK, Reivernet. Unspecified address and room counts must not be invented.
+- Check all three notification recipients can read the submission and only managers can convert/invite. Quarantined files have no download access.
+- Exercise scanner timeout/unavailability, one missing file, clean unreviewed files and a failed remote upload. Other files should continue; failures must be counted and retained for retry.
+- Run only one worker at a time; verify scanner runtime/memory limits on the VPS before general activation. The new 120-second default is headroom, not a performance guarantee.
+- Keep Sage disabled and do not send the test invitation to Reivernet. James approved an XTEST-only live pilot; verify its deployment and mapping separately from the local test.
+
 ## Restart Release: Microsoft Login and Sales Journey
 
 - Run `npm run test:journey` against a local database. Confirm the isolated end-to-end check passes and leaves the normal dataset untouched.
@@ -239,3 +265,19 @@ Local restart browser smoke evidence: active administrator login succeeded; Help
 3. Confirm file metadata is stored
 4. Confirm the SharePoint-style fallback message is understandable when live SharePoint is not configured
 5. Confirm unauthorised users cannot download attachments they should not access
+# Connected Workflow and Sage Acceptance
+
+Perform operational checks after deployment with Sage writes disabled:
+
+1. Sales opens Work Queue: only permitted work appears; Assigned to me and Needs attention filters work. A task link opens the project's Tasks panel.
+2. Opportunity Next Step reflects its stage and missing open-deal contact/decision/follow-up fields. Existing Lead -> Pre-Sales -> Quote -> Project links still work.
+3. Customer account shows permitted linked projects. A user without quote/project read access must not see those records or sensitive counts.
+4. Project groups switch between Overview, Delivery, Commercial and Reports & Handover. Deep links, existing edits and form values remain usable on desktop/mobile.
+5. Resource schedule shows booked/leave/overlap weekday coverage. Inactive records stay hidden by default; Show inactive history survives date/view navigation. Previous month from October reaches September, including summer-time dates.
+6. New project's default dependencies preserve later task offsets; an actual predecessor date edit still runs the existing cascade. Existing plans are not automatically rewritten.
+7. Assigned PM requests an invoice for a completed milestone. Incomplete work and over-contract totals are rejected clearly. James receives a notification; another administrator/PM cannot approve on his behalf.
+8. James rejects with a reason; PM can resubmit the same trigger without creating duplicate requests. Sage stays untouched while disabled.
+9. After separately authorised Sage setup, test read-only connection and a known invoice refresh. Compare currency, invoice number and outstanding balance directly in Sage.
+10. Only after business/customer/ledger/VAT checks and explicit approval, test one real invoice creation with James present. Confirm no duplicate on a repeated action, no customer email is sent, and uncertain responses require reconciliation.
+
+The local automated tests use disposable database schemas and mocked Sage writes. They do not certify real Sage consent, tax configuration, SMTP delivery, Hilton CBOM output or the pre-sales document assistant.

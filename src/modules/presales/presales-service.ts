@@ -125,6 +125,13 @@ export async function createPresalesRequest(context: CrmAccessContext, input: Pr
     ? buildPresalesOpportunityStageSync(linkedOpportunity.stage, Number(linkedOpportunity.value))
     : null;
   const request = await prisma.$transaction(async (transaction) => {
+    let partnerRouteId: string | undefined;
+    if (options.partnerSubmissionId) {
+      await transaction.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`review:${options.partnerSubmissionId}`}))`;
+      const intake = await transaction.partnerSubmission.findUniqueOrThrow({ where: { id: options.partnerSubmissionId }, include: { invitation: true } });
+      if (intake.presalesRequestId) return transaction.presalesRequest.findUniqueOrThrow({ where: { id: intake.presalesRequestId } });
+      partnerRouteId = intake.invitation.routeId;
+    }
     const requestNumber = await nextPresalesRequestNumber(transaction);
     const folderService = new PresalesDocumentFolderServiceStub();
     const folder = folderService.designFolder({
@@ -158,6 +165,18 @@ export async function createPresalesRequest(context: CrmAccessContext, input: Pr
         updatedById: context.userId
       }
     });
+    if (options.partnerSubmissionId) {
+      await transaction.partnerSubmission.update({ where: { id: options.partnerSubmissionId }, data: { presalesRequestId: created.id, status: "reviewed", reviewedAt: new Date(), reviewedById: context.userId } });
+      await transaction.documentWorkspace.create({ data: { entityType: "PresalesRequest", entityId: created.id, routeId: partnerRouteId, status: "pending" } });
+      if (linkedOpportunity) {
+        const key = { entityType: "Opportunity", entityId: linkedOpportunity.id };
+        await transaction.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`workspace:Opportunity:${linkedOpportunity.id}`}))`;
+        const existing = await transaction.documentWorkspace.findUnique({ where: { entityType_entityId: key } });
+        if (existing?.routeId && existing.routeId !== partnerRouteId) throw new Error("Selected opportunity uses a different hotel mapping. Review the hotel and opportunity before proceeding.");
+        await transaction.documentWorkspace.upsert({ where: { entityType_entityId: key }, create: { ...key, routeId: partnerRouteId, status: "pending" }, update: existing?.routeId ? {} : { routeId: partnerRouteId, status: "pending" } });
+      }
+      await transaction.auditLog.create({ data: { userId: context.userId, module: "presales", entityType: "PartnerSubmission", entityId: options.partnerSubmissionId, action: "convert_to_presales", newValue: { presalesRequestId: created.id } } });
+    }
     if (linkedOpportunity && syncedOpportunityStage) {
       await transaction.opportunity.update({
         where: { id: linkedOpportunity.id },
@@ -662,6 +681,7 @@ export type PresalesDeliverableUploadInput = {
 };
 
 type PresalesRequestCreateOptions = {
+  partnerSubmissionId?: string;
   requestedById?: string;
   skipOpportunityStageSync?: boolean;
 };
