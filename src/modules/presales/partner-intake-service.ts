@@ -1,13 +1,16 @@
 import { createHash, randomBytes } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import type { CrmAccessContext } from "@/modules/crm/types/crm-context";
-import { canManagePartnerIntake } from "@/services/documents/document-routing";
+import { canManagePartnerIntake, canViewPartnerIntake } from "@/services/documents/document-routing";
 import { invitationAvailable, invitationTokenSchema, partnerPrefill, partnerSubmissionSchema } from "./partner-intake-schemas";
 import { INTAKE_MAX_FILES, quarantineFile, removeQuarantinedFile } from "./partner-intake-storage";
 import { sendTemplatedEmail } from "@/services/email/email-service";
 
 export function assertPartnerIntakeAccess(context: CrmAccessContext) {
   if (!canManagePartnerIntake(context)) throw new Error("Missing permission: pre-sales intake management");
+}
+export function assertPartnerIntakeReadAccess(context: CrmAccessContext) {
+  if (!canViewPartnerIntake(context)) throw new Error("Missing permission: pre-sales intake viewing");
 }
 export function hashInvitationToken(token: string) { return createHash("sha256").update(invitationTokenSchema.parse(token)).digest("hex"); }
 export async function limitInvitationRequests(token: string) {

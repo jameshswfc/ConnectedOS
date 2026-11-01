@@ -3,7 +3,7 @@ const mocks = vi.hoisted(() => ({
   workspace: { findMany: vi.fn(), findUniqueOrThrow: vi.fn(), update: vi.fn() },
   project: { findMany: vi.fn(), findFirst: vi.fn() }, records: { findMany: vi.fn() },
   route: { findUnique: vi.fn() }, documents: { findMany: vi.fn(), update: vi.fn() },
-  audit: { create: vi.fn() }, lock: vi.fn(), transaction: vi.fn(), ensure: vi.fn()
+  audit: { create: vi.fn() }, lock: vi.fn(), transaction: vi.fn(), ensure: vi.fn(), localPath: vi.fn(), read: vi.fn()
 }));
 vi.mock("@/lib/prisma", () => ({ prisma: {
   documentWorkspace: mocks.workspace, project: mocks.project,
@@ -12,7 +12,9 @@ vi.mock("@/lib/prisma", () => ({ prisma: {
   $executeRaw: mocks.lock, $transaction: mocks.transaction
 } }));
 vi.mock("@/services/documents/document-workspace-service", () => ({ ensureDocumentWorkspace: mocks.ensure }));
-import { syncDocumentWorkspaces } from "@/services/documents/document-sync-service";
+vi.mock("@/services/documents/local-document-path", () => ({ resolveLocalDocumentPath: mocks.localPath }));
+vi.mock("node:fs/promises", () => ({ readFile: mocks.read }));
+import { syncDocumentWorkspaces, syncNewDocuments } from "@/services/documents/document-sync-service";
 import type { GraphDocumentClient } from "@/services/documents/graph-document-client";
 
 const route = { id: "route", active: true, projectsParentId: "hotel", completedParentId: "completed" };
@@ -74,5 +76,42 @@ describe("document workspace reconciliation", () => {
     mocks.route.findUnique.mockResolvedValue({ ...route, active: false }); const graph = client();
     await syncDocumentWorkspaces(graph as unknown as GraphDocumentClient);
     expect(graph.ensureFolder).not.toHaveBeenCalled(); expect(graph.archiveFolder).not.toHaveBeenCalled();
+  });
+});
+
+describe("reviewed document copying", () => {
+  const document = { id: "document", entityType: "PresalesRequest", entityId: "request", fileName: "scope.txt", externalId: "storage/presales/scope.txt", storagePath: null };
+  beforeEach(() => {
+    vi.resetAllMocks(); vi.stubEnv("SHAREPOINT_ENABLED", "true"); vi.stubEnv("SHAREPOINT_DOCUMENTS_SINCE", "2026-11-01T00:00:00.000Z");
+    mocks.documents.findMany.mockResolvedValue([document]);
+    mocks.ensure.mockResolvedValue({ folderId: "verified-folder", status: "ready" });
+    mocks.localPath.mockResolvedValue("/private/verified/scope.txt"); mocks.read.mockResolvedValue(Buffer.from("scope"));
+    mocks.transaction.mockImplementation((fn) => fn({ document: mocks.documents, auditLog: mocks.audit }));
+  });
+  afterEach(() => vi.unstubAllEnvs());
+  it("requires an explicit cutoff and feature flag before copying", async () => {
+    const upload = vi.fn();
+    vi.stubEnv("SHAREPOINT_DOCUMENTS_SINCE", "");
+    expect(await syncNewDocuments({ upload } as unknown as GraphDocumentClient)).toMatchObject({ enabled: false });
+    expect(mocks.documents.findMany).not.toHaveBeenCalled(); expect(upload).not.toHaveBeenCalled();
+  });
+  it("copies verified local content and records SharePoint metadata and audit", async () => {
+    const upload = vi.fn().mockResolvedValue({ id: "remote-file", webUrl: "https://example.sharepoint.com/file" });
+    expect(await syncNewDocuments({ upload } as unknown as GraphDocumentClient)).toMatchObject({ uploaded: 1, failed: 0 });
+    expect(upload).toHaveBeenCalledWith("verified-folder", "document-scope.txt", Buffer.from("scope"));
+    expect(mocks.documents.update).toHaveBeenCalledWith({ where: { id: "document" }, data: { sharepointItemId: "remote-file", webUrl: "https://example.sharepoint.com/file", sharepointSyncError: null } });
+    expect(mocks.audit.create).toHaveBeenCalledOnce();
+  });
+  it("waits for a reviewed hotel folder without inventing a destination", async () => {
+    mocks.ensure.mockResolvedValue({ folderId: null, status: "awaiting_mapping" });
+    const upload = vi.fn();
+    expect(await syncNewDocuments({ upload } as unknown as GraphDocumentClient)).toMatchObject({ pending: 1, uploaded: 0 });
+    expect(upload).not.toHaveBeenCalled(); expect(mocks.read).not.toHaveBeenCalled();
+  });
+  it("retains failed uploads and continues to the next document", async () => {
+    mocks.documents.findMany.mockResolvedValue([document, { ...document, id: "second" }]);
+    const upload = vi.fn().mockRejectedValueOnce(new Error("Provider details")).mockResolvedValue({ id: "remote", webUrl: "https://example.sharepoint.com/file" });
+    expect(await syncNewDocuments({ upload } as unknown as GraphDocumentClient)).toMatchObject({ failed: 1, uploaded: 1 });
+    expect(mocks.documents.update).toHaveBeenCalledWith({ where: { id: "document" }, data: { sharepointSyncError: "Upload pending retry. The local original has been retained." } });
   });
 });

@@ -10,6 +10,14 @@ export const INTAKE_FILE_BYTES = 5 * 1024 * 1024;
 export const INTAKE_MAX_FILES = 5;
 export const INTAKE_ACCEPT = ".pdf,.png,.jpg,.jpeg,.txt";
 
+export function intakeScanTimeoutMs() {
+  const configured = process.env.PARTNER_INTAKE_SCAN_TIMEOUT_SECONDS;
+  if (!configured) return 120000;
+  const seconds = Number(configured);
+  if (!Number.isInteger(seconds) || seconds < 30 || seconds > 300) throw new Error("Partner attachment scan timeout must be between 30 and 300 seconds.");
+  return seconds * 1000;
+}
+
 export function validateIntakeFile(fileName: string, bytes: Buffer) {
   if (!fileName || fileName.length > 150 || /[/\\\x00-\x1f]/.test(fileName)) throw new Error("Invalid attachment name.");
   if (!bytes.length || bytes.length > INTAKE_FILE_BYTES) throw new Error("Each attachment must be between 1 byte and 5 MB.");
@@ -39,7 +47,7 @@ export async function scanQuarantinedFile(key: string, expectedHash: string): Pr
   const scanner = process.env.PARTNER_INTAKE_SCANNER_PATH;
   if (!scanner?.startsWith("/")) return "quarantined";
   try {
-    await execute(scanner, ["--no-summary", "--", quarantinePath(key)], { timeout: 30000, maxBuffer: 8192 });
+    await execute(scanner, ["--no-summary", "--", quarantinePath(key)], { timeout: intakeScanTimeoutMs(), killSignal: "SIGKILL", maxBuffer: 8192 });
     return "clean";
   } catch (error) {
     return (error as { code?: unknown }).code === 1 ? "rejected" : "quarantined";

@@ -1,8 +1,8 @@
-import path from "node:path";
-import { readFile, realpath } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { prisma } from "@/lib/prisma";
 import { GraphDocumentClient } from "./graph-document-client";
 import { ensureDocumentWorkspace } from "./document-workspace-service";
+import { resolveLocalDocumentPath } from "./local-document-path";
 import { parentForWorkspace, shouldArchiveWorkspace, workspaceFolderName, workspaceType, type WorkspaceType } from "./document-routing";
 
 // Reconciliation is deliberate: it also recovers records saved during a worker outage.
@@ -73,16 +73,16 @@ export async function syncDocumentWorkspaces(suppliedClient?: GraphDocumentClien
 
 export async function syncNewDocuments(client: GraphDocumentClient) {
   const since = process.env.SHAREPOINT_DOCUMENTS_SINCE;
-  if (process.env.SHAREPOINT_ENABLED !== "true" || !since || Number.isNaN(Date.parse(since))) return;
+  if (process.env.SHAREPOINT_ENABLED !== "true" || !since || Number.isNaN(Date.parse(since))) return { enabled: false, uploaded: 0, pending: 0, failed: 0 };
   const documents = await prisma.document.findMany({ where: { deletedAt: null, sharepointItemId: null, uploadedAt: { gte: new Date(since) }, entityType: { in: ["Opportunity", "Quote", "PresalesRequest", "Project"] } }, orderBy: { uploadedAt: "asc" }, take: 100 });
+  let uploadedCount = 0, pending = 0, failed = 0;
   for (const document of documents) {
     if (!document.entityId || !document.entityType) continue;
-    const workspace = await ensureDocumentWorkspace(document.entityType as WorkspaceType, document.entityId);
-    if (!workspace.folderId || !["ready", "archived"].includes(workspace.status)) continue;
     try {
+      const workspace = await ensureDocumentWorkspace(document.entityType as WorkspaceType, document.entityId);
+      if (!workspace.folderId || !["ready", "archived"].includes(workspace.status)) { pending++; continue; }
       const relative = document.storagePath ?? (document.entityType === "PresalesRequest" && document.externalId ? document.externalId : "");
-      const absolute = await realpath(path.resolve(relative));
-      if (!["storage/sharepoint-fallback", "storage/presales"].some((root) => absolute.startsWith(path.resolve(root) + path.sep))) throw new Error("Invalid local document path");
+      const absolute = await resolveLocalDocumentPath(relative);
       const buffer = await readFile(absolute);
       if (buffer.length > 25 * 1024 * 1024) throw new Error("File exceeds upload limit");
       const uploaded = await client.upload(workspace.folderId, `${document.id}-${document.fileName.replace(/["*:<>?\/\\|#%]/g, "_").slice(0, 120)}`, buffer);
@@ -90,8 +90,11 @@ export async function syncNewDocuments(client: GraphDocumentClient) {
         await tx.document.update({ where: { id: document.id }, data: { sharepointItemId: uploaded.id, webUrl: uploaded.webUrl, sharepointSyncError: null } });
         await tx.auditLog.create({ data: { module: "documents", entityType: "Document", entityId: document.id, action: "copy_to_sharepoint", newValue: { itemId: uploaded.id, workspaceId: workspace.id } } });
       });
+      uploadedCount++;
     } catch {
+      failed++;
       await prisma.document.update({ where: { id: document.id }, data: { sharepointSyncError: "Upload pending retry. The local original has been retained." } });
     }
   }
+  return { enabled: true, uploaded: uploadedCount, pending, failed };
 }

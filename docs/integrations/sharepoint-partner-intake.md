@@ -2,7 +2,7 @@
 
 ## Delivery Status
 
-Implemented locally on 1 November 2026. Not activated on the production portal. The existing workflow release and Microsoft sign-in are separate; Sage remains disabled.
+Deployed and verified as an **XTEST-only mapped pilot on 1 November 2026**. Partner intake and restricted SharePoint processing are enabled; only the reviewed XTEST route is configured. Sage and automatic export capture remain disabled. The earlier checkpoints below are historical, not the current activation status. See [live deployment evidence](../testing/xtest-intake-live-pilot.md).
 
 The single-tenant **ConnectedOS Documents** application was registered in Entra with James's explicit approval:
 
@@ -11,9 +11,69 @@ The single-tenant **ConnectedOS Documents** application was registered in Entra 
 - Application object ID: `378976b7-ad3b-4b50-a2dd-fa614271c12d`
 - Service principal ID: `1f82376e-fb05-4a21-8945-cfa42e543207`
 
-Registration alone grants no SharePoint access. James subsequently approved saving and granting administrator consent to `Files.SelectedOperations.Selected`; Entra confirmed consent succeeded. The unnecessary default delegated `User.Read` permission was removed. James created and privately saved a separate document-app secret; the Entra tab count confirms one secret without reading its value. It has not been installed on the server, and no folder grants are configured at this checkpoint. Do not reuse the login application's secret or grant tenant-wide file/site access.
+Registration alone grants no SharePoint access. James subsequently approved saving and granting administrator consent to `Files.SelectedOperations.Selected`; Entra confirmed consent succeeded. The unnecessary default delegated `User.Read` permission was removed. James created and privately saved a separate document-app secret. On 1 November 2026 he entered it through a hidden-input VPS installer; Microsoft accepted it before the installer backed up and atomically updated the existing release configuration with mode 600. A separate server check confirmed authentication and the single `Files.SelectedOperations.Selected` application role without displaying credentials or tokens. The three folder grants were subsequently applied and verified as recorded below. Do not reuse the login application's secret or grant tenant-wide file/site access.
+
+Credential installation did not deploy the document release or restart the portal. `SHAREPOINT_ENABLED`, `PARTNER_INTAKE_ENABLED`, `SHAREPOINT_CAPTURE_EXPORTS`, `SAGE_ENABLED` and `SAGE_ALLOW_INVOICE_CREATE` were all verified false. A site-level metadata request returned HTTP 403; this is not a folder-level permission test. Folder grants are now verified, but route configuration and the one-hotel create/upload/archive pilot remain pending. The document secret must be preserved privately when preparing the candidate release configuration. The existing email service still has a console provider and a deferred SMTP implementation, so notification email delivery has not been enabled or verified.
+
+### Restricted Folder Grants: 1 November 2026
+
+James explicitly approved write grants for the following three roots on the CH site. Microsoft Graph returned `201 Created` for each grant to the document application's client ID above. No library-wide or tenant-wide application scope was added.
+
+Drive: `b!fpcMQbxO60Cj7MTJsAHSJomrTWpvwMlOmXbcX5D4uSbTY3H0FDvMSYsM8daGN2z7`
+
+| Root | Item ID | Grant |
+| --- | --- | --- |
+| Business Development | `01A5LZBYFZHZX52LIHGBDK3Y23DIKNQPKG` | write |
+| Pre-sales | `01A5LZBYDAM3U7MIVWCBGIGRSLB4GY6TQS` | write |
+| Deployment | `01A5LZBYHGI4MLCMIBZZBKWI6M47JMOYF5` | write |
+
+The returned permission ID on each root is `aTowaS50fG1zLnNwLmV4dHwwMmYwYzBiNy0yN2VlLTQzOTktOTE4MC0zZjkxYzdkZDI4OTlANjAyODFmOWItZjc4Zi00NWUzLWE2MWQtODI1ZTNkMGQ0M2Rh`. Permission changes must use the appropriate root item, not just this shared principal identifier.
+
+- Before/after comparison: seven existing permission entries per root remained identical, including roles and principals; each root gained only the eighth, application-write entry. Folder-specific grants break parent inheritance, so future parent permission changes need separate review.
+- An independently acquired VPS application token contained only `Files.SelectedOperations.Selected`. All three root metadata and child-list requests returned HTTP 200.
+- Ancestor/library-root metadata and enumeration also return HTTP 200, but enumeration is security-trimmed: exactly the three approved folders, no other children and no continuation page. Do not use ancestor HTTP 200 alone as evidence of unrestricted access. A direct unrelated-folder denial and write/move operations still belong in the pilot.
+- Graph Explorer's temporary personal permissions were revoked via My Apps. The resulting page explicitly stated: "This app does not have any permissions." Already issued access tokens may remain valid until expiry; no further Graph Explorer operations are required for these grants.
+- Graph Explorer was signed out. The dedicated temporary VPS public key was removed; a fresh SSH attempt with that key was refused, and the local private key was removed. The separately installed document-app secret remains private on the VPS.
+- No files were created, uploaded, moved or deleted. No release, migration, restart or automation activation was performed. Completed Sites descendants with unique permissions still need individual pilot verification.
+
+The live recipient check found James, Tim and Stephen active. James and Tim satisfy the prepared intake-management permission check; Stephen's current Sales, Pre-Sales and Project Manager combination does not. The subsequent pilot prepared the narrow read-only fix described below. No roles were changed.
+
+## VPS Pilot - 1 November 2026
+
+The actual Graph client successfully created a synthetic folder named `ConnectedOS Pilot 2026-11-01 - NOT A CUSTOMER` and uploaded `pilot-readme.txt` beneath each of the three approved roots. Repeated creation/upload retained the same folder/file IDs. The client rejected the library root as an allowed destination. This application guard test is not evidence of a Graph-level denial for an unrelated folder.
+
+The synthetic Deployment folder was moved to the existing `Deployment/1. UK/2. Marriott/1. Completed Sites` destination. Folder identity, destination, repeat-safe archival and the retained file were verified. No existing hotel/customer folder was moved. The three clearly labelled pilot folders remain for inspection. This exercised the real Graph move, not a live project's closure workflow.
+
+A separate disposable PostgreSQL schema on the VPS exercised the actual partner services with the three active recipients' IDs and current permission combinations. It verified hotel prefill, durable submission, retry-safe receipt, exactly three notifications, detail links, receive audit, quarantine, real ClamAV clean scan, unavailable-scanner rejection, changed-file rejection and invitation revocation. The schema and test attachment were removed. No production submission, live bell notification or email was sent.
+
+ClamAV and current signatures were installed from Ubuntu packages. The clean-file scan took 28.8 seconds against the current 30-second application limit. Before activation, establish scanner timing headroom and resource limits on this 1.8 GB RAM VPS; do not treat this one scan as a production capacity test.
+
+Prepared local fixes:
+
+- Exactly the three configured notification recipients can read intake and clean attachments when they already hold `presales.create`. Existing management permissions still govern invitation creation/revocation, conversion and document routing. Stephen does not receive management or user-admin rights. Invalid/missing recipient configuration fails closed.
+- Upload source validation resolves both the file and allowed storage roots to canonical paths, supporting the verified `/opt/connectedos/storage` deployment symlink without allowing escaping file symlinks or sibling-prefix paths.
+
+The document release and its additive migration are not deployed. SharePoint, partner intake, export capture and Sage remain disabled. The portal login returned HTTP 200 after the pilot. Authenticated browser review/conversion, live bell delivery, reverse-proxy upload controls, scanner capacity, the scheduled worker and an approved real hotel mapping remain activation checks. Email delivery requires separate provider verification.
+
+After these checks, only the current temporary pilot SSH key was removed. A fresh connection with it was refused, and its local private key was deleted. Private pilot evidence remains on the VPS; no secret appears in the reports.
+
+Local validation for the pilot fixes: 551 tests across 111 files passed, ESLint and production build passed, Prisma schema validation passed and all 30 local migrations were up to date. New tests cover recipient read-only access, manager-only actions, quarantined-download protection and canonical storage paths including traversal/symlink rejection. The older checkpoint below is retained as historical evidence, not the latest pilot status.
 
 ## Record Routing and Archival
+
+### XTEST Intake Hardening
+
+The approved next pilot is **Test Hotel**, code **XTEST**, **Tempo by Hilton**, **UK**, referring partner **Reivernet**. No real address or room/floor counts were supplied: these remain blank in the invitation prefill. Synthetic submission values are explicitly labelled internal test only. No invitation is to be sent externally during this pilot.
+
+`npm run test:partner-intake` now creates an isolated local schema and exercises real invitation, submission, notification, staff conversion and routing persistence services. It refuses remote database hosts, disables SharePoint/Sage/email, verifies one receipt and request on retries, checks three recipients and revocation, then removes its schema and files. `npm run test:partner-intake -- --browser` temporarily opens the same isolated test at port 3012 for a browser submission, including one synthetic attachment, and shuts down after verification. This is not a production seeding command.
+
+On 1 November the XTEST browser test confirmed the four hotel fields and Reivernet prefill, a real text-file selection/upload and the receipt screen. Database assertions confirmed quarantine, exactly three notification targets, reviewed request creation and inherited workspace mapping. No real users were notified and no SharePoint calls were made in this local browser check.
+
+The background scanner now has a default 120-second timeout, configurable using `PARTNER_INTAKE_SCAN_TIMEOUT_SECONDS` from 30 to 300 seconds. It terminates timed-out processes and fails closed. Files are processed serially; one missing file no longer aborts all other intake processing. Clean files waiting for review are not continually rescanned ahead of new submissions, and promotion rechecks integrity and an exclusive attachment lock. Scan/promotion and upload outcomes are counted; pending security scans or failures produce a non-zero worker exit for monitoring. A timeout increase provides headroom, not proof of production scanner capacity.
+
+`documents:sync` now honours both independent feature flags: intake processing is skipped while intake is disabled; folder discovery and remote operations are skipped while SharePoint is disabled. Upload copying still requires an explicit timestamp cutoff. Run a single worker instance using a service manager or `flock`; do not overlap cron runs. Review quarantine failures and storage capacity rather than repeatedly adding new invitations to a stalled queue.
+
+These hardening changes require no additional database migration. The existing additive document/intake migration is still required when deploying the prepared release. Live activation and XTEST mapping must be verified separately; local checks do not establish production delivery.
 
 `DocumentRoute` holds verified hotel, brand, location, address, property code and partner details, with separate folder item IDs for sales, pre-sales, deployment and Completed Sites. These are mapped existing destinations, not names guessed from a billing account or an external form.
 

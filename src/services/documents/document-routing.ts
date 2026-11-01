@@ -16,6 +16,12 @@ export function canManageDocumentRouting(context: CrmAccessContext) {
 export function canManagePartnerIntake(context: CrmAccessContext) {
   return canManageDocumentRouting(context) || (context.permissions.includes("presales.assign") && context.permissions.includes("presales.create"));
 }
+export function canViewPartnerIntake(context: CrmAccessContext) {
+  if (canManagePartnerIntake(context)) return true;
+  const recipients = process.env.PARTNER_INTAKE_NOTIFY_USER_IDS?.split(",").map((id) => id.trim()).filter(Boolean) ?? [];
+  return recipients.length === 3 && new Set(recipients).size === 3
+    && recipients.includes(context.userId) && context.permissions.includes("presales.create");
+}
 export function workspaceFolderName(type: WorkspaceType, id: string, reference: string) {
   return `${reference.replace(/["*:<>?\/\\|#%]/g, "_").slice(0, 80).trim()} - ${type} ${id}`;
 }

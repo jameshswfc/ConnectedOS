@@ -4,12 +4,12 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getModuleContext } from "@/modules/operations/api-utils";
-import { assertPartnerIntakeAccess } from "@/modules/presales/partner-intake-service";
+import { assertPartnerIntakeReadAccess } from "@/modules/presales/partner-intake-service";
 import { quarantinePath } from "@/modules/presales/partner-intake-storage";
 import { documentApiError } from "@/services/documents/document-api-error";
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string; fileId: string }> }) {
   try {
-    const context = await getModuleContext(); assertPartnerIntakeAccess(context);
+    const context = await getModuleContext(); assertPartnerIntakeReadAccess(context);
     const { id, fileId } = z.object({ id: z.string().uuid(), fileId: z.string().uuid() }).parse(await params);
     const file = await prisma.partnerAttachment.findFirst({ where: { id: fileId, submissionId: id, scanStatus: "clean" } });
     if (!file) return NextResponse.json({ error: { message: "This file is unavailable or awaiting security checks." } }, { status: 404 });

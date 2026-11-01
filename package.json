@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "test:journey": "node --env-file=.env --import tsx scripts/check-sales-journey.ts",
     "test:user-roles": "node --env-file=.env --import tsx scripts/check-user-roles.ts",
+    "test:partner-intake": "node --env-file=.env --import tsx scripts/check-partner-intake.ts",
     "import:microsoft-users": "node --env-file=.env --import tsx scripts/import-microsoft-users.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",

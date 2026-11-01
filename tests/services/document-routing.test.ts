@@ -1,11 +1,31 @@
-import { describe, expect, it } from "vitest";
-import { canManageDocumentRouting, canManagePartnerIntake, documentRouteSchema, parentForWorkspace, shouldArchiveWorkspace, workspaceFolderName } from "@/services/documents/document-routing";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { canManageDocumentRouting, canManagePartnerIntake, canViewPartnerIntake, documentRouteSchema, parentForWorkspace, shouldArchiveWorkspace, workspaceFolderName } from "@/services/documents/document-routing";
 import { invitationAvailable, partnerPrefill, partnerSubmissionSchema } from "@/modules/presales/partner-intake-schemas";
 import { hashInvitationToken } from "@/modules/presales/partner-intake-service";
 import { validateIntakeFile, limitedRequestBody } from "@/modules/presales/partner-intake-storage";
 
 describe("document routing and private intake boundaries", () => {
   const normal = { userId: "user", permissions: [] };
+  afterEach(() => vi.unstubAllEnvs());
+  it("lets the three configured recipients read intake without granting management rights", () => {
+    vi.stubEnv("PARTNER_INTAKE_NOTIFY_USER_IDS", "james,tim,stephen");
+    for (const userId of ["james", "tim", "stephen"]) {
+      const context = { userId, permissions: ["presales.create"] };
+      expect(canViewPartnerIntake(context)).toBe(true);
+      expect(canManagePartnerIntake(context)).toBe(false);
+      expect(canManageDocumentRouting(context)).toBe(false);
+    }
+    expect(canViewPartnerIntake({ userId: "someone-else", permissions: ["presales.create"] })).toBe(false);
+    expect(canViewPartnerIntake({ userId: "stephen", permissions: [] })).toBe(false);
+  });
+  it("fails closed for absent or invalid recipient configuration", () => {
+    const context = { userId: "stephen", permissions: ["presales.create"] };
+    for (const setting of ["", "stephen", "james,stephen,stephen", "james,tim,stephen,other"]) {
+      vi.stubEnv("PARTNER_INTAKE_NOTIFY_USER_IDS", setting);
+      expect(canViewPartnerIntake(context)).toBe(false);
+    }
+    expect(canViewPartnerIntake({ ...context, permissionLevel: "administrator" })).toBe(true);
+  });
   it("limits mapping administration and intake triage separately", () => {
     expect(canManageDocumentRouting(normal)).toBe(false);
     expect(canManageDocumentRouting({ ...normal, permissions: ["admin.users"] })).toBe(true);

@@ -2,7 +2,7 @@
 
 ## SharePoint and Private Partner Intake Pilot
 
-Do not enable production flags before the [activation runbook](../integrations/sharepoint-partner-intake.md) gates pass. Use a reviewed pilot property and retain backups; never run production-test seeds as deployment steps.
+The [XTEST live pilot](xtest-intake-live-pilot.md) is deployed and verified. Do not expand beyond its single reviewed hotel mapping before the remaining [activation runbook](../integrations/sharepoint-partner-intake.md) gates pass. Retain backups; never run production-test seeds as deployment steps.
 
 1. Confirm the document-only app has selected-files consent, explicit approved-folder grants and no tenant-wide file/site permissions. Verify access outside those roots fails.
 2. Map one property's sales, pre-sales, deployment and existing Completed Sites item IDs. Create a linked opportunity/request/quote/project and run the document worker twice. Each record must have one child folder, not two.
@@ -16,6 +16,15 @@ Do not enable production flags before the [activation runbook](../integrations/s
 10. Review and confirm the property mapping, choose a permitted account/opportunity and convert. Check one normal pre-sales request, existing stage automation, deliverables, source audit and clean attachments. A conflicting opportunity hotel mapping must be rejected.
 11. Test review/routing APIs with a normal user: proper JSON denial, no route editing or file leakage. Direct SharePoint links must also respect the intended SharePoint audience.
 12. Revoke the pilot invitation and remove only explicitly identified local/pilot fixtures. Record outstanding retention, scanner and email operational checks before wider invitation use.
+
+XTEST follow-up:
+
+- Run `npm run test:partner-intake` locally. It uses and removes an isolated schema, not the normal dataset. Optional `-- --browser` mode opens port 3012 for one synthetic attachment submission.
+- Confirm prefill: Test Hotel, XTEST, Tempo by Hilton, UK, Reivernet. Unspecified address and room counts must not be invented.
+- Check all three notification recipients can read the submission and only managers can convert/invite. Quarantined files have no download access.
+- Exercise scanner timeout/unavailability, one missing file, clean unreviewed files and a failed remote upload. Other files should continue; failures must be counted and retained for retry.
+- Run only one worker at a time; verify scanner runtime/memory limits on the VPS before general activation. The new 120-second default is headroom, not a performance guarantee.
+- Keep Sage disabled and do not send the test invitation to Reivernet. James approved an XTEST-only live pilot; verify its deployment and mapping separately from the local test.
 
 ## Restart Release: Microsoft Login and Sales Journey
 
